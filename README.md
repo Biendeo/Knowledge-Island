@@ -27,7 +27,7 @@ On Linux, you may need to look for a feature called "add", which will let you ad
 
 ### 3. Branched development
 The best part about Github is that you can have multiple "branches" when working. This will allow all four of us to manage our own files on separate branches, and merge any changes we make to each other. We can use the "master" branch to host that "master" version of the file. To do this make a "new branch" by clicking "master", then "manage", then you click the + in the "master" branch (because it's based off what's in the master branch). You should name it after yourself, as it's best to only have one branch per person. You can quickly swap between branches here to switch between who's editing what (but don't commit to other people's branches without asking (there's a system that'll give each person permission to "request" pushing to other people's branches, but for now let's just leave that be)). There's a "merge" feature which basically pushes all your changes directly to another branch, but we'll get to that later in time. For now, we should try to set up our branches.
-On Linux, I have no clue how exactly to do this. You should find a "create branch" feature somewhere. Likewise, "merge" should be somewhere too. Look for that.
+On Linux, I have no clue how exactly to do this. You may need to do a thing called "checkout" (which basically tells it you're done with your branch). That then should have an option for merging with another branch. There should also be a switch and create branch feature somewhere.
 
 Hopefully with that, we'll get underway with this. Also, we're going to be splitting into two groups of two for making the AI. We might just stick with this repo. Keep it simple.
 
