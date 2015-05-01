@@ -1,0 +1,44 @@
+/*
+	For this file, we need to put everything that needs to be stored
+	about the game.
+	
+	Thomas: I think we should give everything player-related (rather
+		than overall) its own struct, and pop that inside this struct.
+		For my own game, I've done it where there's a struct called
+		_player, and it stores their ID, money, and buildingData.
+		We'll design that, and then just add three of those structs
+		inside _game (as each player will need to store the same thing).
+*/
+
+/// This stores specific data about a player. Just have three of them
+/// in _game.
+typedef struct _player {
+	/// This stores the ID of the player.
+	unsigned char playerID;
+	
+	/// This counts how many ARC grants they have. We can use this to
+	/// easily calculate their score.
+	unsigned char ARCs;
+	
+	/// Likewise, this stores how many campuses they have.
+	unsigned char campuses;
+	
+	/// This stores how many stuff people has.
+	unsigned char THDs;
+	unsigned char BPSs;
+	unsigned char BQNs;
+	unsigned char MJs;
+	unsigned char MTVs;
+	unsigned char MMONEYs;
+} Player;
+
+typedef struct _game {
+	/// This stores what turn the game is up to. In game.h, they start
+	/// at -1, so this has to be signed.
+	short turnNumber;
+	/// These store specific data about each player. Their info is
+	/// above.
+	Player p1;
+	Player p2;
+	Player p3;
+} * Game;
