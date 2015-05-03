@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 	assert (getCampuses(g, 1) == 2);
 	assert (getCampuses(g, 2) == 2);
 	assert (getCampuses(g, 3) == 2);
+	assert (getWhoseTurn(g) == 0);
 	assert (getStudents(g, 1, STUDENT_THD) == 0);
 	assert (getStudents(g, 1, STUDENT_BPS) == 0);
 	assert (getStudents(g, 1, STUDENT_BQN) == 0);
