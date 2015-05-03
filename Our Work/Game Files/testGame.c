@@ -151,7 +151,17 @@ int main(int argc, char *argv[]) {
 	action a;
 	// Add some action checks.
 	throwDice(g, 2);
-	
+	// It is not legal to make any action during Terra Nullis ie 
+	// before the game has started.
+	// Does this include PASS?
+	assert (isLegalAction(g, 0) == FALSE);
+	assert (isLegalAction(g, 1) == FALSE);
+	assert (isLegalAction(g, 2) == FALSE);
+	assert (isLegalAction(g, 3) == FALSE);
+	assert (isLegalAction(g, 4) == FALSE);
+	assert (isLegalAction(g, 5) == FALSE);
+	assert (isLegalAction(g, 6) == FALSE);
+	assert (isLegalAction(g, 7) == FALSE);
 	
 	printf("All tests passed, you are Awesome!\n");
 	return EXIT_SUCCESS;
