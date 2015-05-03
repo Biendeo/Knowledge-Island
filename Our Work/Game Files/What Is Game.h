@@ -90,7 +90,7 @@ typedef struct _action {
 /// Each array must be "NUM_REGIONS" long.
 /// There's a "#defined" array, that is then stored in an actual array,
 /// which then is used to start the game creation function.
-// We need to figure out what on earth this is.
+// Thomas: I figured it out, it's the default map layout.
 /*
 #define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, 
                 STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, 

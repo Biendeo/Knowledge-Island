@@ -14,28 +14,42 @@
 /// in _game.
 typedef struct _player {
 	/// This stores the ID of the player.
-	unsigned char playerID;
+	int playerID;
 	
-	/// This counts how many ARC grants they have. We can use this to
-	/// easily calculate their score.
-	unsigned char ARCs;
+	/// This counts how many of each building they have. This will
+	/// allow us to easily calculate their score, and use other
+	/// functions with it.
+	int ARCs;
+	int campuses;
+	int G08s;
+	int patents;
+	int papers;
 	
-	/// Likewise, this stores how many campuses they have.
-	unsigned char campuses;
-	
-	/// This stores how many stuff people has.
-	unsigned char THDs;
-	unsigned char BPSs;
-	unsigned char BQNs;
-	unsigned char MJs;
-	unsigned char MTVs;
-	unsigned char MMONEYs;
+	/// This stores how many disciplines a person has.
+	int THDs;
+	int BPSs;
+	int BQNs;
+	int MJs;
+	int MTVs;
+	int MMONEYs;
 } Player;
 
 typedef struct _game {
 	/// This stores what turn the game is up to. In game.h, they start
 	/// at -1, so this has to be signed.
-	short turnNumber;
+	int turnNumber;
+	
+	/// This stores whose turn it is.
+	int whoseTurn;
+	
+	/// This stores the disciplines and dice layout of the board.
+	int discipline[];
+	int dice[];
+	
+	/// This stores the exchange rate of resources. It should be stored
+	/// somewhere at least.
+	int exchangeRate;
+	
 	/// These store specific data about each player. Their info is
 	/// above.
 	Player p1;
