@@ -36,6 +36,17 @@ typedef struct _player {
 	int MMONEYs;
 } Player;
 
+typedef struct _building {
+	/// This stores what type of building it is.
+	int buildingType;
+	
+	/// This stores the path to that building.
+	path path[PATH_LIMIT];
+	
+	/// This stores what player this building belongs to.
+	int player;
+} Building;
+
 typedef struct _game {
 	/// This stores what turn the game is up to. In game.h, they start
 	/// at -1, so this has to be signed.
@@ -51,6 +62,9 @@ typedef struct _game {
 	/// This stores the exchange rate of resources. It should be stored
 	/// somewhere at least.
 	int exchangeRate;
+	
+	/// This stores all the buildings currently in the game.
+	Building b;
 	
 	/// These store specific data about each player. Their info is
 	/// above.
