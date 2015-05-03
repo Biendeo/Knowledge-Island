@@ -64,7 +64,9 @@ typedef struct _game {
 	int exchangeRate;
 	
 	/// This stores all the buildings currently in the game.
-	Building b;
+	/// 126 is the maximum number of ARCs and corner resources. We'll
+	/// turn it into a define later.
+	Building b[126];
 	
 	/// These store specific data about each player. Their info is
 	/// above.
