@@ -3,8 +3,70 @@
 // Thomas Moffet, thomasmoffet, z5061905
 // F09C, Joseph Harris
 // 1/05/2015
-// This program communicates with game.h to play Knowledge Island.
+// This program tests the functions of Game.h.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#include "Game.h"
+
 
 int main(int argc, char *argv[]) {
-	// MAIN STUFF, ADD THIS WHEN THE PLAN IS DONE.
+	/// Firstly, the game loads the default map data, and then uses that
+	/// to initialise the game (g).
+	int disciplines[] = DEFAULT_DISCIPLINES;
+	int dice[] = DEFAULT_DICE;
+	Game g = newGame(disciplines, dice);
+	
+	assert (getDiscipline(g,  0) == STUDENT_BQN);
+	assert (getDiscipline(g,  1) == STUDENT_MMONEY);
+	assert (getDiscipline(g,  2) == STUDENT_MJ);
+	assert (getDiscipline(g,  3) == STUDENT_MMONEY);
+	assert (getDiscipline(g,  4) == STUDENT_MJ);
+	assert (getDiscipline(g,  5) == STUDENT_BPS);
+	assert (getDiscipline(g,  6) == STUDENT_MTV);
+	assert (getDiscipline(g,  7) == STUDENT_MTV);
+	assert (getDiscipline(g,  8) == STUDENT_BPS);
+	assert (getDiscipline(g,  9) == STUDENT_MTV);
+	assert (getDiscipline(g, 10) == STUDENT_BQN);
+	assert (getDiscipline(g, 11) == STUDENT_MJ);
+	assert (getDiscipline(g, 12) == STUDENT_BQN);
+	assert (getDiscipline(g, 13) == STUDENT_THD);
+	assert (getDiscipline(g, 14) == STUDENT_MJ);
+	assert (getDiscipline(g, 15) == STUDENT_MMONEY);
+	assert (getDiscipline(g, 16) == STUDENT_MTV);
+	assert (getDiscipline(g, 17) == STUDENT_BQN);
+	assert (getDiscipline(g, 18) == STUDENT_BPS);
+	assert (getDiceValue(g,  0) == 9);
+	assert (getDiceValue(g,  1) == 10);
+	assert (getDiceValue(g,  2) == 8);
+	assert (getDiceValue(g,  3) == 12);
+	assert (getDiceValue(g,  4) == 6);
+	assert (getDiceValue(g,  5) == 5);
+	assert (getDiceValue(g,  6) == 3);
+	assert (getDiceValue(g,  7) == 11);
+	assert (getDiceValue(g,  8) == 3);
+	assert (getDiceValue(g,  9) == 11);
+	assert (getDiceValue(g, 10) == 4);
+	assert (getDiceValue(g, 11) == 6);
+	assert (getDiceValue(g, 12) == 4);
+	assert (getDiceValue(g, 13) == 7);
+	assert (getDiceValue(g, 14) == 9);
+	assert (getDiceValue(g, 15) == 2);
+	assert (getDiceValue(g, 16) == 8);
+	assert (getDiceValue(g, 17) == 10);
+	assert (getDiceValue(g, 18) == 5);
+	
+	assert (getTurnNumber(g) == -1);
+	assert (getKPIpoints(g, UNI_A) == 20);
+	assert (getKPIpoints(g, UNI_B) == 20);
+	assert (getKPIpoints(g, UNI_C) == 20);
+	action a;
+	// Add some action checks.
+	throwDice(g, 2);
+	
+	
+	printf("All tests passed, you are Awesome!\n");
+	return EXIT_SUCCESS;
 }
