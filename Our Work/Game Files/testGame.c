@@ -62,10 +62,106 @@ int main(int argc, char *argv[]) {
 	assert (getKPIpoints(g, UNI_A) == 20);
 	assert (getKPIpoints(g, UNI_B) == 20);
 	assert (getKPIpoints(g, UNI_C) == 20);
+	assert (getCampuses(g, 0) == 2);
+	assert (getCampuses(g, 1) == 2);
+	assert (getCampuses(g, 2) == 2);
+	assert (getCampuses(g, 3) == 2);
+	assert (getWhoseTurn(g) == 0);
+	assert (getStudents(g, 1, STUDENT_THD) == 0);
+	assert (getStudents(g, 1, STUDENT_BPS) == 0);
+	assert (getStudents(g, 1, STUDENT_BQN) == 0);
+	assert (getStudents(g, 1, STUDENT_MJ) == 0);
+	assert (getStudents(g, 1, STUDENT_MTV) == 0);
+	assert (getStudents(g, 1, STUDENT_MMONEY) == 0);
+	assert (getStudents(g, 2, STUDENT_THD) == 0);
+	assert (getStudents(g, 2, STUDENT_BPS) == 0);
+	assert (getStudents(g, 2, STUDENT_BQN) == 0);
+	assert (getStudents(g, 2, STUDENT_MJ) == 0);
+	assert (getStudents(g, 2, STUDENT_MTV) == 0);
+	assert (getStudents(g, 2, STUDENT_MMONEY) == 0);
+	assert (getStudents(g, 3, STUDENT_THD) == 0);
+	assert (getStudents(g, 3, STUDENT_BPS) == 0);
+	assert (getStudents(g, 3, STUDENT_BQN) == 0);
+	assert (getStudents(g, 3, STUDENT_MJ) == 0);
+	assert (getStudents(g, 3, STUDENT_MTV) == 0);
+	assert (getStudents(g, 3, STUDENT_MMONEY) == 0);
+	
+	assert (getExchangeRate(g, 1, STUDENT_BPS, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BQN, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BPS, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MJ, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BPS, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MTV, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BPS, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MMONEY, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BQN, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MJ, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BQN, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MTV, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_BQN, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MMONEY, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MJ, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MTV, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MJ, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MMONEY, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MTV, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 1, STUDENT_MMONEY, STUDENT_MTV) == 3);
+	
+	assert (getExchangeRate(g, 2, STUDENT_BPS, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BQN, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BPS, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MJ, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BPS, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MTV, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BPS, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MMONEY, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BQN, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MJ, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BQN, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MTV, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_BQN, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MMONEY, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MJ, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MTV, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MJ, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MMONEY, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MTV, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 2, STUDENT_MMONEY, STUDENT_MTV) == 3);
+	
+	assert (getExchangeRate(g, 3, STUDENT_BPS, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BQN, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BPS, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MJ, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BPS, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MTV, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BPS, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_BPS) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BQN, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MJ, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BQN, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MTV, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_BQN, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_BQN) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MJ, STUDENT_MTV) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MTV, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MJ, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_MJ) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MTV, STUDENT_MMONEY) == 3);
+	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_MTV) == 3);
 	action a;
 	// Add some action checks.
 	throwDice(g, 2);
-	
+	// It is not legal to make any action during Terra Nullis ie 
+	// before the game has started.
+	// Does this include PASS?
+	assert (isLegalAction(g, 0) == FALSE);
+	assert (isLegalAction(g, 1) == FALSE);
+	assert (isLegalAction(g, 2) == FALSE);
+	assert (isLegalAction(g, 3) == FALSE);
+	assert (isLegalAction(g, 4) == FALSE);
+	assert (isLegalAction(g, 5) == FALSE);
+	assert (isLegalAction(g, 6) == FALSE);
+	assert (isLegalAction(g, 7) == FALSE);
 	
 	printf("All tests passed, you are Awesome!\n");
 	return EXIT_SUCCESS;

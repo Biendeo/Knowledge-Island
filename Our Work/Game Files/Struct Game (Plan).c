@@ -15,6 +15,8 @@
 typedef struct _player {
 	/// This stores the ID of the player.
 	int playerID;
+	///Should we store this or use a formula to calculate this from the other info?
+	int KPIs; 
 	
 	/// This counts how many of each building they have. This will
 	/// allow us to easily calculate their score, and use other
