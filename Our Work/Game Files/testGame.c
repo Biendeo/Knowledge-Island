@@ -148,8 +148,6 @@ int main(int argc, char *argv[]) {
 	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_MJ) == 3);
 	assert (getExchangeRate(g, 3, STUDENT_MTV, STUDENT_MMONEY) == 3);
 	assert (getExchangeRate(g, 3, STUDENT_MMONEY, STUDENT_MTV) == 3);
-
-	
 	action a;
 	// Add some action checks.
 	throwDice(g, 2);
