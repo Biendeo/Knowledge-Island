@@ -63,11 +63,14 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
+			int diceScore;
+			scanf("%d", &diceScore);
 			throwDice(g, diceScore);
 			
 			playTurn(g);
 		}
 		gHasWon = checkWin(g);
+		
 	}
 	
 	/// The winner is printed, and the game is unloaded.
@@ -86,7 +89,14 @@ int playTurn(Game g) {
 	
 	while (action.actionCode != PASS) {
 		// Here, the user needs to input an action.
-		isLegalAction(g, a);
+		scanf("%d", &action.actionCode); // scans user input
+		if (isLegalAction(g, a) == TRUE) {
+			makeAction(g, a);	
+		}
+		//checks if player wins game after their action
+		if (checkWin(g) != FALSE) {
+			action.actionCode = PASS; 
+		}
 	}
 	
 	return EXIT_SUCCESS;
