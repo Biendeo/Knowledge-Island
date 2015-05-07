@@ -20,14 +20,36 @@ int checkWin(Game g);
 void printWinner(Game g, int gHasWon);
 
 int main(int argc, char *argv[]) {
+	/// This just sets the random dice roll seed.
+	srand(time(NULL));
+	
 	/// Firstly, the game loads the default map data, and then uses that
 	/// to initialise the game (g).
 	int disciplines[] = DEFAULT_DISCIPLINES;
 	int dice[] = DEFAULT_DICE;
-	Game g = newGame(disciplines, dice);
 	
-	/// This just sets the random dice roll seed.
-	srand(time(NULL));
+	// This bit is an alternative that randomly generates the hexs.
+	/*
+		/// A random number is created to determine what discipline each
+		/// hexagon gets. 19 is the number of hexs, 6 is the number of
+		/// disciplines.
+		// If we can, we should convert these to #defines.
+		short pos = 0;
+		while (pos < NUM_REGIONS) {
+			discipline[pos] = (rand() % 6);
+			pos++;
+		}
+		
+		/// Then we do the same for the dice numbers. They are between 2 and
+		/// 12, so the formula is as that.
+		pos = 0;
+		while (pos < NUM_REGIONS) {
+			dice[pos] = (rand() % 6) + 2;
+			pos++
+		}
+	*/
+	
+	Game g = newGame(disciplines, dice);
 	
 	/// Then, the game begins. This will constantly ask for input, and
 	/// loop until the game is won.
