@@ -15,17 +15,14 @@
 
 action decideAction (Game g) {
 
-   
+ 
    action nextAction;
-   nextAction.actionCode = PASS;
    
-   if (discipline[STUDENT_MTV] >= 1 && discipline[STUDENT_MJ] >= 1 &&
-      discipline[STUDENT_MMONEY] >= 1) {
+  if ((getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MMONEY) >= 1) &&
+    (getStudents(g, 1, STUDENT_MTV) >= 1)) {
       nextAction.actionCode = START_SPINOFF;
-      discipline[STUDENT_MTV] = discipline[STUDENT_MTV] - 1;
-      discipline[STUDENT_MJ] = discipline[STUDENT_MJ] - 1;
-      discipline[STUDENT_MMONEY] = discipline[STUDENT_MMONEY] - 1;
-      
-   
-   return nextAction;
+  } else {
+  nextAction.actionCode = PASS;
+  }
+  return nextAction;
 }
