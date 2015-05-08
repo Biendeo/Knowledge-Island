@@ -18,6 +18,7 @@
 int playTurn(Game g);
 int checkWin(Game g);
 void printWinner(Game g, int gHasWon);
+int makeDiceValue(void);
 
 int main(int argc, char *argv[]) {
 	/// This just sets the random dice roll seed.
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
 			int diceScore;
-			scanf("%d", &diceScore);
+			diceScore = makeDiceValue();
 			throwDice(g, diceScore);
 			
 			playTurn(g);
@@ -128,4 +129,11 @@ void printWinner(Game g, int hasWon) {
 		printf("Player 3 ");
 	}
 	printf("is the winner!\n");
+}
+
+int makeDiceValue(void) {
+	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
+        int pos = rand()%36;
+        int diceValue = permutation[pos];
+	return diceValue;
 }
