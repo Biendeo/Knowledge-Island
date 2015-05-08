@@ -65,8 +65,7 @@ int main(int argc, char *argv[]) {
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
 			int diceScore;
-			diceScore = makeDiceValue();
-			throwDice(g, diceScore);
+			diceScore = makeDiceValue();			throwDice(g, diceScore);
 			
 			playTurn(g);
 		}
