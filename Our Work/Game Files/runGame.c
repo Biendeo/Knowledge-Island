@@ -96,27 +96,27 @@ int playTurn(Game g) {
          // Need to know: How to refer to the vertex
          // if = vertex existed
          if (/*vertex exist*/)  {
-            action.actionCode == OBTAIN_ARC;
-            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
-            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
+            makeAction(g, OBTAIN_ARC)
+            //getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
+            //getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
          }
       } 
       while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
               (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
          if (/*vertex exist*/) {
-            action.actionCode == BUILD_CAMPUS;
-            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
-            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
-            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 1;
-            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 1;
+            makeAction(g, BUILDING_CAMPUS);
+           //getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
+           //getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
+           //getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 1;
+           //getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 1;
          }
       }
       while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
             //Not sure about path to vertex >=1
          if (/*vertex exist*/) {
-            action.actionCode == BUILD_G08;
-            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 2;
-            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 3;
+            makeAction(g, BUILD_G08);
+           //getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 2;
+            //getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 3;
             //how to call a building?
          }
 		// Here, the user needs to input an action.
