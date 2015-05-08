@@ -63,8 +63,8 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
-			int diceScore;
-			scanf("%d", &diceScore);
+			//int diceScore;
+			//scanf("%d", &diceScore);
 			throwDice(g, diceScore);
 			
 			playTurn(g);
