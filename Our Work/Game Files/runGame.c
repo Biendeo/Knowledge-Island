@@ -88,6 +88,36 @@ int playTurn(Game g) {
 	action.actionCode = 8;
 	
 	while (action.actionCode != PASS) {
+      /// building arc branch
+      /// can cts build if you have the resources
+      
+      while (discipline[STUDENT_BPS] >= 1 && discipline[STUDENT_BQN] >= 1) {
+         // Need to know: How to refer to the vertex
+         // if = vertex existed
+         if (/*vertex exist*/)  {
+            action.actionCode == OBTAIN_ARC;
+            discipline[STUDENT_BPS] = discipline[STUDENT_BPS] - 1;
+            discipline[STUDENT_BQN] = discipline[STUDENT_BQN] - 1;
+         }
+      } 
+      while (discipline[STUDENT_BPS] >= 1 && discipline[STUDENT_BQN] >= 1 &&
+              discipline[STUDENT_MJ} >= 1 && discipline[STUDENT_MTV] >= 1) {
+         if (/*vertex exist*/) {
+            action.actionCode == BUILD_CAMPUS;
+            discipline[STUDENT_BPS] = discipline[STUDENT_BPS] - 1;
+            discipline[STUDENT_BQN] = discipline[STUDENT_BQN] - 1;
+            discipline[STUDENT_MJ] = discipline[STUDENT_MJ] - 1;
+            discipline[STUDENT_MTV] = discipline[STUDENT_MTV] - 1;
+         }
+      }
+      while (discipline[STUDENT_MJ} >= 2 && discipline[STUDENT_MTV] >= 3 && BUILD_CAMPUS >= 1) {
+            //Not sure about BUILD_CAMPUS >=1
+         if (/*vertex exist*/) {
+            action.actionCode == BUILD_G08;
+            discipline[STUDENT_MJ] = discipline[STUDENT_MJ] - 2;
+            discipline[STUDENT_MTV] = discipline[STUDENT_MTV] - 3;
+            //how to call a building?
+         }
 		// Here, the user needs to input an action.
 		scanf("%d", &action.actionCode); // scans user input
 		if (isLegalAction(g, a) == TRUE) {
@@ -96,8 +126,7 @@ int playTurn(Game g) {
 		//checks if player wins game after their action
 		if (checkWin(g) != FALSE) {
 			action.actionCode = PASS; 
-		}
-	}
+		}	}
 	
 	return EXIT_SUCCESS;
 }
