@@ -18,6 +18,7 @@
 int playTurn(Game g);
 int checkWin(Game g);
 void printWinner(Game g, int gHasWon);
+int makeDiceValue(void);
 
 int main(int argc, char *argv[]) {
 	/// This just sets the random dice roll seed.
@@ -63,9 +64,8 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
-			//int diceScore;
-			//scanf("%d", &diceScore);
-			throwDice(g, diceScore);
+			int diceScore;
+			diceScore = makeDiceValue();			throwDice(g, diceScore);
 			
 			playTurn(g);
 		}
@@ -88,6 +88,36 @@ int playTurn(Game g) {
 	action.actionCode = 8;
 	
 	while (action.actionCode != PASS) {
+      /// building arc branch
+      /// can cts build if you have the resources
+      
+      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1)) {
+         // Need to know: How to refer to the vertex
+         // if = vertex existed
+         if (/*vertex exist*/)  {
+            action.actionCode == OBTAIN_ARC;
+            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
+            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
+         }
+      } 
+      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
+              (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
+         if (/*vertex exist*/) {
+            action.actionCode == BUILD_CAMPUS;
+            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
+            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
+            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 1;
+            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 1;
+         }
+      }
+      while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
+            //Not sure about path to vertex >=1
+         if (/*vertex exist*/) {
+            action.actionCode == BUILD_G08;
+            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 2;
+            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 3;
+            //how to call a building?
+         }
 		// Here, the user needs to input an action.
 		scanf("%d", &action.actionCode); // scans user input
 		if (isLegalAction(g, a) == TRUE) {
@@ -96,8 +126,7 @@ int playTurn(Game g) {
 		//checks if player wins game after their action
 		if (checkWin(g) != FALSE) {
 			action.actionCode = PASS; 
-		}
-	}
+		}	}
 	
 	return EXIT_SUCCESS;
 }
@@ -128,4 +157,11 @@ void printWinner(Game g, int hasWon) {
 		printf("Player 3 ");
 	}
 	printf("is the winner!\n");
+}
+
+int makeDiceValue(void) {
+	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
+        int pos = rand()%36;
+        int diceValue = permutation[pos];
+	return diceValue;
 }

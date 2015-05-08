@@ -12,7 +12,36 @@
 #include "Game.h"
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#include "game.h"
+
+
 int main(int argc, char *argv[]) {
+<<<<<<< HEAD
+   action discFrom;
+   discFrom = 3;
+   //if discFrom = 3
+   //then discTo = 1
+   //but discFrom >= 3
+   action discTo;
+   discTo = discFrom/3;
+   assert (discTo == 1);
+   
+   //this is for actioncode in action struct
+   //this is a intend
+   action actCode;
+   actCode = PASS;
+   action actExecute;
+   actExecute = actCode;
+   assert (actExecute == 0);
+
+   printf ("You've passed all test!");
+   printf ("You're awesome!");
+	// MAIN STUFF, ADD THIS WHEN THE PLAN IS DONE.
+=======
 	/// Firstly, the game loads the default map data, and then uses that
 	/// to initialise the game (g).
 	int disciplines[] = DEFAULT_DISCIPLINES;
@@ -165,4 +194,5 @@ int main(int argc, char *argv[]) {
 	
 	printf("All tests passed, you are Awesome!\n");
 	return EXIT_SUCCESS;
+>>>>>>> origin/Pua
 }
