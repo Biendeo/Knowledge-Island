@@ -18,6 +18,7 @@
 int playTurn(Game g);
 int checkWin(Game g);
 void printWinner(Game g, int gHasWon);
+int makeDiceValue(void);
 
 int main(int argc, char *argv[]) {
 	/// This just sets the random dice roll seed.
@@ -63,11 +64,14 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
+			int diceScore;
+			diceScore = makeDiceValue();
 			throwDice(g, diceScore);
 			
 			playTurn(g);
 		}
 		gHasWon = checkWin(g);
+		
 	}
 	
 	/// The winner is printed, and the game is unloaded.
@@ -116,9 +120,14 @@ int playTurn(Game g) {
             //how to call a building?
          }
 		// Here, the user needs to input an action.
-
-		isLegalAction(g, a);
-	}
+		scanf("%d", &action.actionCode); // scans user input
+		if (isLegalAction(g, a) == TRUE) {
+			makeAction(g, a);	
+		}
+		//checks if player wins game after their action
+		if (checkWin(g) != FALSE) {
+			action.actionCode = PASS; 
+		}	}
 	
 	return EXIT_SUCCESS;
 }
@@ -149,4 +158,11 @@ void printWinner(Game g, int hasWon) {
 		printf("Player 3 ");
 	}
 	printf("is the winner!\n");
+}
+
+int makeDiceValue(void) {
+	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
+        int pos = rand()%36;
+        int diceValue = permutation[pos];
+	return diceValue;
 }
