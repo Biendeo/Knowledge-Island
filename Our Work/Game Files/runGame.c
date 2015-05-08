@@ -65,7 +65,8 @@ int main(int argc, char *argv[]) {
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
 			int diceScore;
-			diceScore = makeDiceValue();			throwDice(g, diceScore);
+			diceScore = makeDiceValue();
+			throwDice(g, diceScore);
 			
 			playTurn(g);
 		}
@@ -88,36 +89,6 @@ int playTurn(Game g) {
 	action.actionCode = 8;
 	
 	while (action.actionCode != PASS) {
-      /// building arc branch
-      /// can cts build if you have the resources
-      
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1)) {
-         // Need to know: How to refer to the vertex
-         // if = vertex existed
-         if (/*vertex exist*/)  {
-            action.actionCode == OBTAIN_ARC;
-            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
-            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
-         }
-      } 
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
-              (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
-         if (/*vertex exist*/) {
-            action.actionCode == BUILD_CAMPUS;
-            getStudents(g, 1, STUDENT_BPS) = getStudents(g, 1, STUDENT_BPS) - 1;
-            getStudents(g, 1, STUDENT_BQN) = getStudents(g, 1, STUDENT_BQN) - 1;
-            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 1;
-            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 1;
-         }
-      }
-      while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
-            //Not sure about path to vertex >=1
-         if (/*vertex exist*/) {
-            action.actionCode == BUILD_G08;
-            getStudents(g, 1, STUDENT_MJ) = getStudents(g, 1, STUDENT_MJ) - 2;
-            getStudents(g, 1, STUDENT_MTV) = getStudents(g, 1, STUDENT_MTV) - 3;
-            //how to call a building?
-         }
 		// Here, the user needs to input an action.
 		scanf("%d", &action.actionCode); // scans user input
 		if (isLegalAction(g, a) == TRUE) {
@@ -126,7 +97,8 @@ int playTurn(Game g) {
 		//checks if player wins game after their action
 		if (checkWin(g) != FALSE) {
 			action.actionCode = PASS; 
-		}	}
+		}
+	}
 	
 	return EXIT_SUCCESS;
 }
