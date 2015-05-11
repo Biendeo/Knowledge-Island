@@ -296,10 +296,42 @@ int getCampus(Game g, path pathToVertex) {
 }
 
 /// This asks for a path to an edge, and returns what is on it.
-// INCOMPLETE
+// Messy, might need to clean this.
 int getARC(Game g, path pathToEdge) {
 	int whatARC = VACANT_ARC;
+	short pathpos = 0;
+	short arrayPos = 0;
 	
+	/// We go through every building and break when we find a value.
+	while (arrayPos < 126) {
+		pathpos = 0;
+		/// We check each position of the path in each building. If it
+		/// matches, it breaks.
+		while (pathpos < PATH_LIMIT) {
+			if (pathToEdge[pathpos] == g->b[arrayPos].path[pathpos]) {
+				break;
+			}
+			pathpos++;
+		}
+		/// If it broke, we exit out of this.
+		if (pathPos < PATH_LIMIT) {
+			break;
+		}
+		/// Otherwise we check the next building.
+		arrayPos++;
+	}
+	
+	/// If we broke, this will check who owned that building.
+	if (arrayPos < 126) {
+		if (g->b[arrayPos].player == UNI_A) {
+			whatARC = ARC_A;
+		} else if (g->b[arrayPos].player == UNI_B) {
+			whatARC = ARC_B;
+		} else if (g->b[arrayPos].player == UNI_C) {
+			whatARC = ARC_C;
+		}
+	}
+	/// And then we return the result.
 	return whatARC;
 }
 
