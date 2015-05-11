@@ -1,14 +1,21 @@
 /*
-	For this file, we need to put everything that needs to be stored
-	about the game.
-	
-	Thomas: I think we should give everything player-related (rather
-		than overall) its own struct, and pop that inside this struct.
-		For my own game, I've done it where there's a struct called
-		_player, and it stores their ID, money, and buildingData.
-		We'll design that, and then just add three of those structs
-		inside _game (as each player will need to store the same thing).
+	WHAT NEEDS TO BE DONE:
+	makeAction();
+		Compute what the user has input, and do it. 
+	throwDice();
+		We need to compute paths to buildings, and add resources based
+		on them.
+	getCampus();
+		Figure out how to compute a path, and get the specificly stored
+		building.
+	getARC();
+		Same as above, just a slightly different result.
 */
+
+// Thomas Moffet, thomasmoffet, z5061905
+// F09C, Joseph Harris
+// 12/05/2015
+// This program is the underlying functions of Knowledge Island.
 
 /// This stores specific data about a player. Just have three of them
 /// in _game.
@@ -23,7 +30,7 @@ typedef struct _player {
 	/// functions with it.
 	int ARCs;
 	int campuses;
-	int G08s;
+	int GO8s;
 	int patents;
 	int papers;
 	
@@ -56,8 +63,8 @@ typedef struct _game {
 	int whoseTurn;
 	
 	/// This stores the disciplines and dice layout of the board.
-	int discipline[];
-	int dice[];
+	int discipline[NUM_REGIONS];
+	int dice[NUM_REGIONS];
 	
 	/// This stores the exchange rate of resources. It should be stored
 	/// somewhere at least.
@@ -80,23 +87,80 @@ typedef struct _game {
 /// Each array must be "NUM_REGIONS" long.
 /// There's a "#defined" array, that is then stored in an actual array,
 /// which then is used to start the game creation function.
-// Thomas: I figured it out, it's the default map layout.
-/*
-#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, 
-                STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, 
-                STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, 
-                STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, 
-                STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS }
-#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
-*/
 
 /// When the game initalises, you store these numbers into variables,
 /// and then pass that into the initialise function.
-// INCOMPLETE
+// MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
-	Game g;
-	// From here on out, we initialise every other value in our struct.
+	Game g = malloc(sizeof(Game));
+	/// This is used to fill out the discipline and dice layouts.
+	short pos = 0;
+	short pathpos = 0;
 	
+	g->turnNumber = -1;
+	g->whoseTurn = 0;
+	
+	while (pos < 19) {
+		g->discipline[pos] = discipline[pos];
+		g->dice[pos] = dice[pos];
+		pos++;
+	}
+	
+	g->exchangeRate = 3;
+	
+	/// Now we set all the building data.
+	pos = 0;
+	while (pos < 126) {
+		pathpos = 0;
+		g->b[pos].buildingType = 0;
+		g->b[pos].player = 0;
+		while (pathPos < 150) {
+			g->b[pos].path[pathpos] = 0;
+			pathpos++;
+		}
+	}
+	
+	/// Now the player data.
+	// Some of this we can set right away.
+	g->p1.playerID = 1;
+	g->p1.KPIs = 0;
+	g->p1.ARCs = 0;
+	g->p1.campuses = 0;
+	g->p1.GO8s = 0;
+	g->p1.patents = 0;
+	g->p1.papers = 0;
+	g->p1.THDs = 0;
+	g->p1.BPSs = 0;
+	g->p1.BQNs = 0;
+	g->p1.MJs = 0;
+	g->p1.MTVs = 0;
+	g->p1.MMONEYs = 0;
+	g->p2.playerID = 2;
+	g->p2.KPIs = 0;
+	g->p2.ARCs = 0;
+	g->p2.campuses = 0;
+	g->p2.GO8s = 0;
+	g->p2.patents = 0;
+	g->p2.papers = 0;
+	g->p2.THDs = 0;
+	g->p2.BPSs = 0;
+	g->p2.BQNs = 0;
+	g->p2.MJs = 0;
+	g->p2.MTVs = 0;
+	g->p2.MMONEYs = 0;
+	g->p3.playerID = 3;
+	g->p3.KPIs = 0;
+	g->p3.ARCs = 0;
+	g->p3.campuses = 0;
+	g->p3.GO8s = 0;
+	g->p3.patents = 0;
+	g->p3.papers = 0;
+	g->p3.THDs = 0;
+	g->p3.BPSs = 0;
+	g->p3.BQNs = 0;
+	g->p3.MJs = 0;
+	g->p3.MTVs = 0;
+	g->p3.MMONEYs = 0;
 	return g;
 }
 
@@ -113,14 +177,18 @@ void makeAction (Game g, action a) {
 }
 
 /// This advances the game to the next turn. It increases the turn
-/// number, and gives a dice roll.
-// advance the game to the next turn, 
-// assuming that the dice has just been rolled and produced diceScore
-// the game starts in turn -1 (we call this state "Terra Nullis") and 
-// moves to turn 0 as soon as the first dice is thrown. 
+/// number, and computes a dice roll given.
 // INCOMPLETE
 void throwDice (Game g, int diceScore) {
+	/// Firstly, we increase the turn.
+	g->turnNumber++;
+	g->whoseTurn++;
+	if (g->whoseTurn > NUM_UNIS) {
+		g->whoseTurn = UNI_A;
+	}
 	
+	/// Then we give everyone resources based on the dice roll.
+	// ADD 
 }
 
 /// These are the "getter" functions. They return something based on
@@ -306,17 +374,17 @@ int getARCs (Game g, int player) {
 
 /// This asks for a player, and returns how many GO8s they have.
 int getGO8s (Game g, int player) {
-	int howManyG08s = 0;
+	int howManyGO8s = 0;
 	
 	if (player == ARC_A) {
-		howManyG08s = g->p1.G08s;
+		howManyGO8s = g->p1.GO8s;
 	} else if (player == ARC_B) {
-		howManyG08s = g->p2.G08s;
+		howManyGO8s = g->p2.GO8s;
 	} else if (player == ARC_C) {
-		howManyG08s = g->p3.G08s;
+		howManyGO8s = g->p3.GO8s;
 	}
 	
-	return howManyG08s;
+	return howManyGO8s;
 }
 
 /// This asks for a player, and returns how many campuses they have.
