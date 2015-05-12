@@ -5,17 +5,30 @@
 	throwDice();
 		We need to compute paths to buildings, and add resources based
 		on them.
-	getCampus();
-		Figure out how to compute a path, and get the specificly stored
-		building.
-	getARC();
-		Same as above, just a slightly different result.
+	convertPath();
+		We need to convert a path to a co-ordinate.
 */
 
 // Thomas Moffet, thomasmoffet, z5061905
 // F09C, Joseph Harris
 // 12/05/2015
 // This program is the underlying functions of Knowledge Island.
+
+/// This is the co-ordinate storage system. Refer to the co-ordinate
+/// diagram to determine where a co-ordinate is on the board.
+// Thomas: I will make a function that converts a path to a co-ord.
+// Since nothing returns a path, we can use this to store the location
+// of objects.
+
+#define NUM_EDGES 72
+#define NUM_VERTICES 54
+
+#define NOT_FOUND -1
+
+typedef struct _co-ordinate {
+	char x;
+	char y;
+} Coord;
 
 /// This stores specific data about a player. Just have three of them
 /// in _game.
@@ -43,16 +56,24 @@ typedef struct _player {
 	int MMONEYs;
 } Player;
 
-typedef struct _building {
-	/// This stores what type of building it is.
-	int buildingType;
-	
-	/// This stores the path to that building.
-	path path[PATH_LIMIT];
+/// This stores the data of a single ARC grant.
+typedef struct _edge {
+	/// This stores the start and end positions of the road.
+	coord start;
+	coord end;
 	
 	/// This stores what player this building belongs to.
-	int player;
-} Building;
+	int type;
+} Edge;
+
+/// This stores the data of a single campus.
+typedef struct _vertex {
+	/// This stores the position of the campus.
+	coord start;
+	
+	/// This stores what player this belongs to (as well as the type).
+	int type;
+} Vertex;
 
 typedef struct _game {
 	/// This stores what turn the game is up to. In game.h, they start
@@ -70,10 +91,11 @@ typedef struct _game {
 	/// somewhere at least.
 	int exchangeRate;
 	
-	/// This stores all the buildings currently in the game.
-	/// 126 is the maximum number of ARCs and corner resources. We'll
-	/// turn it into a define later.
-	Building b[126];
+	/// This stores all the data of the possible buildings on the board.
+	// Thomas: Are we cool with sorting them like this? I think it'll be
+	// convenient for accessing either campuses or ARCs.
+	Edge ARC[NUM_EDGES];
+	Vertex campus[NUM_VERTICES];
 	
 	/// These store specific data about each player. Their info is
 	/// above.
@@ -81,6 +103,12 @@ typedef struct _game {
 	Player p2;
 	Player p3;
 } * Game;
+
+/// These are our custom-defined functions. They are at the bottom of
+/// the whole file.
+Coord convertPath(path path);
+short findCampus(Game g, path pathToEdge);
+short findARC(Game g, path pathToEdge);
 
 /// These are the "setters". Basically, when the game starts, these are
 /// the values that are used to initialise the data.
@@ -109,20 +137,24 @@ Game newGame (int discipline[], int dice[]) {
 	g->exchangeRate = 3;
 	
 	/// Now we set all the building data.
+	// We need to make a function that assigns the starts and ends, and
+	// just return void. While order won't matter, every value needs to
+	// be assigned.
 	pos = 0;
-	while (pos < 126) {
-		pathpos = 0;
-		g->b[pos].buildingType = 0;
-		g->b[pos].player = 0;
-		while (pathPos < 150) {
-			g->b[pos].path[pathpos] = 0;
-			pathpos++;
+	while (pos < NUM_EDGES) {
+		if (pos < NUM_VERTICES) {
+			g->campus[pos].start = 0;
+			g->campus[pos].type = 0;
 		}
+		g->ARC[pos].start = 0;
+		g->ARC[pos].end = 0;
+		g->ARC[pos].type = 0;
+		pos++;
 	}
 	
 	/// Now the player data.
 	// Some of this we can set right away.
-	g->p1.playerID = 1;
+	g->p1.playerID = UNI_A;
 	g->p1.KPIs = 0;
 	g->p1.ARCs = 0;
 	g->p1.campuses = 0;
@@ -135,7 +167,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MJs = 0;
 	g->p1.MTVs = 0;
 	g->p1.MMONEYs = 0;
-	g->p2.playerID = 2;
+	g->p2.playerID = UNI_A;
 	g->p2.KPIs = 0;
 	g->p2.ARCs = 0;
 	g->p2.campuses = 0;
@@ -148,7 +180,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p2.MJs = 0;
 	g->p2.MTVs = 0;
 	g->p2.MMONEYs = 0;
-	g->p3.playerID = 3;
+	g->p3.playerID = UNI_C;
 	g->p3.KPIs = 0;
 	g->p3.ARCs = 0;
 	g->p3.campuses = 0;
@@ -288,17 +320,27 @@ int getWhoseTurn (Game g) {
 }
 
 /// This asks for a path to a vertex, and returns what is on it.
-// INCOMPLETE
 int getCampus(Game g, path pathToVertex) {
 	int whatCampus = VACANT_ARC;
 	
+	short ID = findCampus(g, pathToVertex);
+	
+	if (ID != NOT_FOUND) {
+		whatArc = g->campus[ID].type;
+	}
 	return whatCampus;
 }
 
 /// This asks for a path to an edge, and returns what is on it.
-// INCOMPLETE
 int getARC(Game g, path pathToEdge) {
 	int whatARC = VACANT_ARC;
+	
+	// findARC returns what member of the array is that specific ARC.
+	short ID = findARC(g, pathToEdge);
+	
+	if (ID != NOT_FOUND) {
+		whatArc = g->ARC[ID].type;
+	}
 	
 	return whatARC;
 }
@@ -492,4 +534,61 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	// or something, but for now it'll just be 3. This doesn't use any
 	// data yet.
 	return exchangeRate;
+}
+
+/// This function converts a path from the starting vertex into a
+/// triangle co-ordinate. Refer to the diagram to check these values.
+// INCOMPLETE
+Coord convertPath(path path) {
+	Coord coord;
+	
+	return returnCoord;
+}
+
+/// This function compares a coordinate with the campuses stored in
+/// memory, and returns the array position of the matching one, or
+/// NOT_FOUND if no match was found.
+short findCampus(Game g, Coord coord) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+	
+	/// Every vertex is checked until the given co-ordinate's x and y
+	/// values match that vertex's. Then, it breaks and returns that ID.
+	while ((pos < NUM_VERTICES) && (ID == NOT_FOUND)) {
+		if ((coord.x == g->campus[pos].start.x) &&
+		    (coord.y == g->campus[pos].start.y)) {
+			ID = pos;
+		}
+		pos++;
+	}
+	
+	return ID;
+}
+
+/// This is the same as above, just with two coords for edges.
+short findARC(Game g, Coord start, Coord end) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+	
+	/// Every edge is checked until the given co-ordinate's x and y
+	/// values match that edge's. Then, it breaks and returns that ID.
+	/// It checks if either of the ends of an edge match
+	while ((pos < NUM_EDGES) && (ID == NOT_FOUND)) {
+		if ((start.x == g->campus[pos].start.x) &&
+		    (start.y == g->campus[pos].start.y)) {
+			if ((end.x == g->campus[pos].end.x) &&
+		    (end.y == g->campus[pos].end.y)) {
+				ID = pos;
+			}
+		} else if ((start.x == g->campus[pos].end.x) &&
+		           (start.y == g->campus[pos].end.y)) {
+				if ((end.x == g->campus[pos].start.x) &&
+		            (end.y == g->campus[pos].start.y)) {
+					ID = pos;	
+				}
+			}
+		pos++;
+	}
+	
+	return ID;
 }
