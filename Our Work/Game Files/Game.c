@@ -139,6 +139,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->exchangeRate = 3;
 	
 	/// Now we set all the building data.
+	/// All the data is initially "flushed".
 	// We need to make a function that assigns the starts and ends, and
 	// just return void. While order won't matter, every value needs to
 	// be assigned.
@@ -156,6 +157,11 @@ Game newGame (int discipline[], int dice[]) {
 		g->ARC[pos].type = 0;
 		pos++;
 	}
+	
+	/// Then, each vertex and edge is assigned a position. These start
+	/// from the top-left, and go row-by-row.
+	initialiseVertices(g);
+	initialiseEdges(g);
 	
 	/// Now the player data.
 	// Some of this we can set right away.
@@ -599,7 +605,7 @@ short findARC(Game g, Coord start, Coord end) {
 }
 
 void initialiseVertices(Game g) {
-	g->ARC[p]
+	
 }
 
 void intialiseEdges(Game g) {
