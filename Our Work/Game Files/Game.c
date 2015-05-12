@@ -18,6 +18,10 @@
 // Since nothing returns a path, we can use this to store the location
 // of objects.
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "Game.h"
+
 #define NUM_EDGES 72
 #define NUM_VERTICES 54
 
@@ -27,7 +31,7 @@
 #define RIGHT 'R'
 #define BACK 'B'
 
-typedef struct _co-ordinate {
+typedef struct _coordinate {
 	char x;
 	char y;
 } Coord;
@@ -674,16 +678,16 @@ short findARC(Game g, Coord start, Coord end) {
 	/// values match that edge's. Then, it breaks and returns that ID.
 	/// It checks if either of the ends of an edge match
 	while ((pos < NUM_EDGES) && (ID == NOT_FOUND)) {
-		if ((start.x == g->campus[pos].start.x) &&
-		    (start.y == g->campus[pos].start.y)) {
-			if ((end.x == g->campus[pos].end.x) &&
-		    (end.y == g->campus[pos].end.y)) {
+		if ((start.x == g->ARC[pos].start.x) &&
+		    (start.y == g->ARC[pos].start.y)) {
+			if ((end.x == g->ARC[pos].end.x) &&
+		    (end.y == g->ARC[pos].end.y)) {
 				ID = pos;
 			}
-		} else if ((start.x == g->campus[pos].end.x) &&
-		           (start.y == g->campus[pos].end.y)) {
-				if ((end.x == g->campus[pos].start.x) &&
-		            (end.y == g->campus[pos].start.y)) {
+		} else if ((start.x == g->ARC[pos].end.x) &&
+		           (start.y == g->ARC[pos].end.y)) {
+				if ((end.x == g->ARC[pos].start.x) &&
+		            (end.y == g->ARC[pos].start.y)) {
 					ID = pos;	
 				}
 			}
