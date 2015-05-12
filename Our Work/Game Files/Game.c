@@ -25,6 +25,10 @@
 
 #define NOT_FOUND -1
 
+#define LEFT 'L'
+#define RIGHT 'R'
+#define BACK 'B'
+
 typedef struct _co-ordinate {
 	char x;
 	char y;
@@ -552,6 +556,93 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 // INCOMPLETE
 Coord convertPath(path path) {
 	Coord coord;
+	/// These are the starting co-ords from the beginning of a path.
+	coord.x = 7;
+	coord.y = 10;
+	/// This is the direction the path is facing.
+	/// If the direction value is n then it is facing at (2n+1) o'clock.
+	short direction = 2;
+	/// This tracks where we are in the path.
+	short pos = 0;
+	
+	/// When the path ends, we stop moving the co-ordinate.
+	while ((path[pos] == LEFT) || (path[pos] == RIGHT) ||
+	                              (path[pos] == BACK)) {
+		if (direction == 0) {
+			if (path[pos] == LEFT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == BACK) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			}
+		} else if (direction == 1) {
+			if (path[pos] == LEFT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 4;
+				coord.x--;
+			}
+		} else if (direction == 2) {
+			if (path[pos] == LEFT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == RIGHT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 5;
+				coord.y++;
+			}
+		} else if (direction == 3) {
+			if (path[pos] == LEFT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == BACK) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			}
+		} else if (direction == 4) {
+			if (path[pos] == LEFT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 1;
+				coord.x++;
+			}
+		} else if (direction == 5) {
+			if (path[pos] == LEFT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == RIGHT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 2;
+				coord.y--;
+			}
+		}
+		pos++;
+	}
 	
 	return returnCoord;
 }
