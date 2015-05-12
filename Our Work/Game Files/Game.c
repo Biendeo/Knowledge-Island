@@ -25,6 +25,10 @@
 
 #define NOT_FOUND -1
 
+#define LEFT 'L'
+#define RIGHT 'R'
+#define BACK 'B'
+
 typedef struct _co-ordinate {
 	char x;
 	char y;
@@ -109,6 +113,8 @@ typedef struct _game {
 Coord convertPath(path path);
 short findCampus(Game g, path pathToEdge);
 short findARC(Game g, path pathToEdge);
+void initialiseVertices(Game g);
+void initialiseEdges(Game g);
 
 /// These are the "setters". Basically, when the game starts, these are
 /// the values that are used to initialise the data.
@@ -137,20 +143,29 @@ Game newGame (int discipline[], int dice[]) {
 	g->exchangeRate = 3;
 	
 	/// Now we set all the building data.
+	/// All the data is initially "flushed".
 	// We need to make a function that assigns the starts and ends, and
 	// just return void. While order won't matter, every value needs to
 	// be assigned.
 	pos = 0;
 	while (pos < NUM_EDGES) {
 		if (pos < NUM_VERTICES) {
-			g->campus[pos].start = 0;
+			g->campus[pos].start.x = 0;
+			g->campus[pos].start.y = 0;
 			g->campus[pos].type = 0;
 		}
-		g->ARC[pos].start = 0;
-		g->ARC[pos].end = 0;
+		g->ARC[pos].start.x = 0;
+		g->ARC[pos].start.y = 0;
+		g->ARC[pos].end.x = 0;
+		g->ARC[pos].end.y = 0;
 		g->ARC[pos].type = 0;
 		pos++;
 	}
+	
+	/// Then, each vertex and edge is assigned a position. These start
+	/// from the top-left, and go row-by-row.
+	initialiseVertices(g);
+	initialiseEdges(g);
 	
 	/// Now the player data.
 	// Some of this we can set right away.
@@ -541,6 +556,93 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 // INCOMPLETE
 Coord convertPath(path path) {
 	Coord coord;
+	/// These are the starting co-ords from the beginning of a path.
+	coord.x = 7;
+	coord.y = 10;
+	/// This is the direction the path is facing.
+	/// If the direction value is n then it is facing at (2n+1) o'clock.
+	short direction = 2;
+	/// This tracks where we are in the path.
+	short pos = 0;
+	
+	/// When the path ends, we stop moving the co-ordinate.
+	while ((path[pos] == LEFT) || (path[pos] == RIGHT) ||
+	                              (path[pos] == BACK)) {
+		if (direction == 0) {
+			if (path[pos] == LEFT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == BACK) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			}
+		} else if (direction == 1) {
+			if (path[pos] == LEFT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 4;
+				coord.x--;
+			}
+		} else if (direction == 2) {
+			if (path[pos] == LEFT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == RIGHT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 5;
+				coord.y++;
+			}
+		} else if (direction == 3) {
+			if (path[pos] == LEFT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == BACK) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			}
+		} else if (direction == 4) {
+			if (path[pos] == LEFT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 1;
+				coord.x++;
+			}
+		} else if (direction == 5) {
+			if (path[pos] == LEFT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == RIGHT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 2;
+				coord.y--;
+			}
+		}
+		pos++;
+	}
 	
 	return returnCoord;
 }
@@ -591,4 +693,451 @@ short findARC(Game g, Coord start, Coord end) {
 	}
 	
 	return ID;
+}
+
+void initialiseVertices(Game g) {
+	/// These are arranged by rows.
+	g->campus[ 0].start.x = 7;
+	g->campus[ 0].start.y = 10;
+	g->campus[ 1].start.x = 8;
+	g->campus[ 1].start.y = 10;
+	
+	g->campus[ 2].start.x = 5;
+	g->campus[ 2].start.y = 9;
+	g->campus[ 3].start.x = 6;
+	g->campus[ 3].start.y = 9;
+	g->campus[ 4].start.x = 8;
+	g->campus[ 4].start.y = 9;
+	g->campus[ 5].start.x = 9;
+	g->campus[ 5].start.y = 9;
+	
+	g->campus[ 6].start.x = 3;
+	g->campus[ 6].start.y = 8;
+	g->campus[ 7].start.x = 4;
+	g->campus[ 7].start.y = 8;
+	g->campus[ 8].start.x = 6;
+	g->campus[ 8].start.y = 8;
+	g->campus[ 9].start.x = 7;
+	g->campus[ 9].start.y = 8;
+	g->campus[10].start.x = 9;
+	g->campus[10].start.y = 8;
+	g->campus[11].start.x = 10;
+	g->campus[11].start.y = 8;
+	
+	g->campus[12].start.x = 2;
+	g->campus[12].start.y = 7;
+	g->campus[13].start.x = 4;
+	g->campus[13].start.y = 7;
+	g->campus[14].start.x = 5;
+	g->campus[14].start.y = 7;
+	g->campus[15].start.x = 7;
+	g->campus[15].start.y = 7;
+	g->campus[16].start.x = 8;
+	g->campus[16].start.y = 7;
+	g->campus[17].start.x = 10;
+	g->campus[17].start.y = 7;
+	
+	g->campus[18].start.x = 2;
+	g->campus[18].start.y = 6;
+	g->campus[19].start.x = 3;
+	g->campus[19].start.y = 6;
+	g->campus[20].start.x = 5;
+	g->campus[20].start.y = 6;
+	g->campus[21].start.x = 6;
+	g->campus[21].start.y = 6;
+	g->campus[22].start.x = 8;
+	g->campus[22].start.y = 6;
+	g->campus[23].start.x = 9;
+	g->campus[23].start.y = 6;
+	
+	g->campus[24].start.x = 1;
+	g->campus[24].start.y = 5;
+	g->campus[25].start.x = 3;
+	g->campus[25].start.y = 5;
+	g->campus[26].start.x = 4;
+	g->campus[26].start.y = 5;
+	g->campus[27].start.x = 6;
+	g->campus[27].start.y = 5;
+	g->campus[28].start.x = 7;
+	g->campus[28].start.y = 5;
+	g->campus[29].start.x = 9;
+	g->campus[29].start.y = 5;
+	
+	g->campus[30].start.x = 1;
+	g->campus[30].start.y = 4;
+	g->campus[31].start.x = 2;
+	g->campus[31].start.y = 4;
+	g->campus[32].start.x = 4;
+	g->campus[32].start.y = 4;
+	g->campus[33].start.x = 5;
+	g->campus[33].start.y = 4;
+	g->campus[34].start.x = 7;
+	g->campus[34].start.y = 4;
+	g->campus[35].start.x = 8;
+	g->campus[35].start.y = 4;
+	
+	g->campus[36].start.x = 0;
+	g->campus[36].start.y = 3;
+	g->campus[37].start.x = 2;
+	g->campus[37].start.y = 3;
+	g->campus[38].start.x = 3;
+	g->campus[38].start.y = 3;
+	g->campus[39].start.x = 5;
+	g->campus[39].start.y = 3;
+	g->campus[40].start.x = 6;
+	g->campus[40].start.y = 3;
+	g->campus[41].start.x = 8;
+	g->campus[41].start.y = 3;
+	
+	g->campus[42].start.x = 0;
+	g->campus[42].start.y = 2;
+	g->campus[43].start.x = 1;
+	g->campus[43].start.y = 2;
+	g->campus[44].start.x = 3;
+	g->campus[44].start.y = 2;
+	g->campus[45].start.x = 4;
+	g->campus[45].start.y = 2;
+	g->campus[46].start.x = 6;
+	g->campus[46].start.y = 2;
+	g->campus[47].start.x = 7;
+	g->campus[47].start.y = 2;
+	
+	g->campus[46].start.x = 1;
+	g->campus[46].start.y = 1;
+	g->campus[47].start.x = 2;
+	g->campus[47].start.y = 1;
+	g->campus[48].start.x = 4;
+	g->campus[48].start.y = 1;
+	g->campus[49].start.x = 5;
+	g->campus[49].start.y = 1;
+	
+	g->campus[50].start.x = 2;
+	g->campus[50].start.y = 0;
+	g->campus[51].start.x = 3;
+	g->campus[51].start.y = 0;
+}
+
+void intialiseEdges(Game g) {
+	/// These are arranged by rows.
+	/// Firstly, horizontal edges.
+	g->ARC[ 0].start.x = 7;
+	g->ARC[ 0].start.y = 10;
+	g->ARC[ 0].end.x   = 8;
+	g->ARC[ 0].end.y   = 10;
+	
+	g->ARC[ 1].start.x = 5;
+	g->ARC[ 1].start.y = 9;
+	g->ARC[ 1].end.x   = 6;
+	g->ARC[ 1].end.y   = 9;
+	g->ARC[ 2].start.x = 8;
+	g->ARC[ 2].start.y = 9;
+	g->ARC[ 2].end.x   = 9;
+	g->ARC[ 2].end.y   = 9;
+	
+	g->ARC[ 3].start.x = 3;
+	g->ARC[ 3].start.y = 8;
+	g->ARC[ 3].end.x   = 4;
+	g->ARC[ 3].end.y   = 8;
+	g->ARC[ 4].start.x = 6;
+	g->ARC[ 4].start.y = 8;
+	g->ARC[ 4].end.x   = 7;
+	g->ARC[ 4].end.y   = 8;
+	g->ARC[ 5].start.x = 9;
+	g->ARC[ 5].start.y = 8;
+	g->ARC[ 5].end.x   = 10;
+	g->ARC[ 5].end.y   = 8;
+	
+	g->ARC[ 6].start.x = 4;
+	g->ARC[ 6].start.y = 7;
+	g->ARC[ 6].end.x   = 5;
+	g->ARC[ 6].end.y   = 7;
+	g->ARC[ 7].start.x = 7;
+	g->ARC[ 7].start.y = 7;
+	g->ARC[ 7].end.x   = 8;
+	g->ARC[ 7].end.y   = 7;
+	
+	g->ARC[ 8].start.x = 2;
+	g->ARC[ 8].start.y = 6;
+	g->ARC[ 8].end.x   = 3;
+	g->ARC[ 8].end.y   = 6;
+	g->ARC[ 9].start.x = 5;
+	g->ARC[ 9].start.y = 6;
+	g->ARC[ 9].end.x   = 6;
+	g->ARC[ 9].end.y   = 6;
+	g->ARC[10].start.x = 8;
+	g->ARC[10].start.y = 6;
+	g->ARC[10].end.x   = 9;
+	g->ARC[10].end.y   = 6;
+	
+	g->ARC[11].start.x = 3;
+	g->ARC[11].start.y = 5;
+	g->ARC[11].end.x   = 4;
+	g->ARC[11].end.y   = 5;
+	g->ARC[12].start.x = 6;
+	g->ARC[12].start.y = 5;
+	g->ARC[12].end.x   = 7;
+	g->ARC[12].end.y   = 5;
+	
+	g->ARC[13].start.x = 1;
+	g->ARC[13].start.y = 4;
+	g->ARC[13].end.x   = 2;
+	g->ARC[13].end.y   = 4;
+	g->ARC[14].start.x = 4;
+	g->ARC[14].start.y = 4;
+	g->ARC[14].end.x   = 5;
+	g->ARC[14].end.y   = 4;
+	g->ARC[15].start.x = 7;
+	g->ARC[15].start.y = 4;
+	g->ARC[15].end.x   = 8;
+	g->ARC[15].end.y   = 4;
+	
+	g->ARC[16].start.x = 2;
+	g->ARC[16].start.y = 3;
+	g->ARC[16].end.x   = 3;
+	g->ARC[16].end.y   = 3;
+	g->ARC[17].start.x = 5;
+	g->ARC[17].start.y = 3;
+	g->ARC[17].end.x   = 6;
+	g->ARC[17].end.y   = 3;
+	
+	g->ARC[18].start.x = 0;
+	g->ARC[18].start.y = 2;
+	g->ARC[18].end.x   = 1;
+	g->ARC[18].end.y   = 2;
+	g->ARC[19].start.x = 3;
+	g->ARC[19].start.y = 2;
+	g->ARC[19].end.x   = 4;
+	g->ARC[19].end.y   = 2;
+	g->ARC[20].start.x = 6;
+	g->ARC[20].start.y = 2;
+	g->ARC[20].end.x   = 7;
+	g->ARC[20].end.y   = 2;
+	
+	g->ARC[21].start.x = 1;
+	g->ARC[21].start.y = 1;
+	g->ARC[21].end.x   = 2;
+	g->ARC[21].end.y   = 1;
+	g->ARC[22].start.x = 4;
+	g->ARC[22].start.y = 1;
+	g->ARC[22].end.x   = 5;
+	g->ARC[22].end.y   = 1;
+	
+	g->ARC[23].start.x = 2;
+	g->ARC[23].start.y = 0;
+	g->ARC[23].end.x   = 3;
+	g->ARC[23].end.y   = 0;
+	
+	/// Secondly, edges that go up-right.
+	g->ARC[24].start.x = 6;
+	g->ARC[24].start.y = 9;
+	g->ARC[24].end.x   = 7;
+	g->ARC[24].end.y   = 10;
+	
+	g->ARC[25].start.x = 4;
+	g->ARC[25].start.y = 8;
+	g->ARC[25].end.x   = 5;
+	g->ARC[25].end.y   = 9;
+	g->ARC[26].start.x = 7;
+	g->ARC[26].start.y = 8;
+	g->ARC[26].end.x   = 8;
+	g->ARC[26].end.y   = 9;
+	
+	g->ARC[27].start.x = 2;
+	g->ARC[27].start.y = 7;
+	g->ARC[27].end.x   = 3;
+	g->ARC[27].end.y   = 8;
+	g->ARC[28].start.x = 5;
+	g->ARC[28].start.y = 7;
+	g->ARC[28].end.x   = 6;
+	g->ARC[28].end.y   = 8;
+	g->ARC[29].start.x = 8;
+	g->ARC[29].start.y = 7;
+	g->ARC[29].end.x   = 9;
+	g->ARC[29].end.y   = 8;
+	
+	g->ARC[30].start.x = 3;
+	g->ARC[30].start.y = 6;
+	g->ARC[30].end.x   = 4;
+	g->ARC[30].end.y   = 7;
+	g->ARC[31].start.x = 6;
+	g->ARC[31].start.y = 6;
+	g->ARC[31].end.x   = 7;
+	g->ARC[31].end.y   = 7;
+	g->ARC[32].start.x = 9;
+	g->ARC[32].start.y = 6;
+	g->ARC[32].end.x   = 10;
+	g->ARC[32].end.y   = 7;
+	
+	g->ARC[33].start.x = 1;
+	g->ARC[33].start.y = 5;
+	g->ARC[33].end.x   = 2;
+	g->ARC[33].end.y   = 6;
+	g->ARC[34].start.x = 4;
+	g->ARC[34].start.y = 5;
+	g->ARC[34].end.x   = 5;
+	g->ARC[34].end.y   = 6;
+	g->ARC[35].start.x = 7;
+	g->ARC[35].start.y = 5;
+	g->ARC[35].end.x   = 8;
+	g->ARC[35].end.y   = 6;
+	
+	g->ARC[36].start.x = 2;
+	g->ARC[36].start.y = 4;
+	g->ARC[36].end.x   = 3;
+	g->ARC[36].end.y   = 5;
+	g->ARC[37].start.x = 5;
+	g->ARC[37].start.y = 4;
+	g->ARC[37].end.x   = 6;
+	g->ARC[37].end.y   = 5;
+	g->ARC[38].start.x = 8;
+	g->ARC[38].start.y = 4;
+	g->ARC[38].end.x   = 9;
+	g->ARC[38].end.y   = 5;
+	
+	g->ARC[39].start.x = 0;
+	g->ARC[39].start.y = 3;
+	g->ARC[39].end.x   = 1;
+	g->ARC[39].end.y   = 4;
+	g->ARC[40].start.x = 3;
+	g->ARC[40].start.y = 3;
+	g->ARC[40].end.x   = 4;
+	g->ARC[40].end.y   = 4;
+	g->ARC[41].start.x = 6;
+	g->ARC[41].start.y = 3;
+	g->ARC[41].end.x   = 7;
+	g->ARC[41].end.y   = 4;
+	
+	g->ARC[42].start.x = 1;
+	g->ARC[42].start.y = 2;
+	g->ARC[42].end.x   = 2;
+	g->ARC[42].end.y   = 3;
+	g->ARC[43].start.x = 4;
+	g->ARC[43].start.y = 2;
+	g->ARC[43].end.x   = 5;
+	g->ARC[43].end.y   = 3;
+	g->ARC[44].start.x = 7;
+	g->ARC[44].start.y = 2;
+	g->ARC[44].end.x   = 8;
+	g->ARC[44].end.y   = 3;
+	
+	g->ARC[45].start.x = 2;
+	g->ARC[45].start.y = 1;
+	g->ARC[45].end.x   = 3;
+	g->ARC[45].end.y   = 2;
+	g->ARC[46].start.x = 5;
+	g->ARC[46].start.y = 1;
+	g->ARC[46].end.x   = 6;
+	g->ARC[46].end.y   = 2;
+	
+	g->ARC[47].start.x = 3;
+	g->ARC[47].start.y = 0;
+	g->ARC[47].end.x   = 4;
+	g->ARC[47].end.y   = 1;
+	
+	/// Finally, edges that go down-right.
+	g->ARC[48].start.x = 8;
+	g->ARC[48].start.y = 10;
+	g->ARC[48].end.x   = 8;
+	g->ARC[48].end.y   = 9;
+	
+	g->ARC[49].start.x = 6;
+	g->ARC[49].start.y = 9;
+	g->ARC[49].end.x   = 6;
+	g->ARC[49].end.y   = 8;
+	g->ARC[50].start.x = 9;
+	g->ARC[50].start.y = 9;
+	g->ARC[50].end.x   = 9;
+	g->ARC[50].end.y   = 8;
+	
+	g->ARC[51].start.x = 4;
+	g->ARC[51].start.y = 8;
+	g->ARC[51].end.x   = 4;
+	g->ARC[51].end.y   = 7;
+	g->ARC[52].start.x = 7;
+	g->ARC[52].start.y = 8;
+	g->ARC[52].end.x   = 7;
+	g->ARC[52].end.y   = 7;
+	g->ARC[53].start.x = 10;
+	g->ARC[53].start.y = 8;
+	g->ARC[53].end.x   = 10;
+	g->ARC[53].end.y   = 7;
+	
+	g->ARC[54].start.x = 2;
+	g->ARC[54].start.y = 7;
+	g->ARC[54].end.x   = 2;
+	g->ARC[54].end.y   = 6;
+	g->ARC[55].start.x = 5;
+	g->ARC[55].start.y = 7;
+	g->ARC[55].end.x   = 5;
+	g->ARC[55].end.y   = 6;
+	g->ARC[56].start.x = 8;
+	g->ARC[56].start.y = 7;
+	g->ARC[56].end.x   = 8;
+	g->ARC[56].end.y   = 6;
+	
+	g->ARC[57].start.x = 3;
+	g->ARC[57].start.y = 6;
+	g->ARC[57].end.x   = 3;
+	g->ARC[57].end.y   = 5;
+	g->ARC[58].start.x = 6;
+	g->ARC[58].start.y = 6;
+	g->ARC[58].end.x   = 6;
+	g->ARC[58].end.y   = 5;
+	g->ARC[59].start.x = 9;
+	g->ARC[59].start.y = 6;
+	g->ARC[59].end.x   = 9;
+	g->ARC[59].end.y   = 5;
+	
+	g->ARC[60].start.x = 1;
+	g->ARC[60].start.y = 5;
+	g->ARC[60].end.x   = 1;
+	g->ARC[60].end.y   = 4;
+	g->ARC[61].start.x = 4;
+	g->ARC[61].start.y = 5;
+	g->ARC[61].end.x   = 4;
+	g->ARC[61].end.y   = 4;
+	g->ARC[62].start.x = 7;
+	g->ARC[62].start.y = 5;
+	g->ARC[62].end.x   = 7;
+	g->ARC[62].end.y   = 4;
+	
+	g->ARC[63].start.x = 2;
+	g->ARC[63].start.y = 4;
+	g->ARC[63].end.x   = 2;
+	g->ARC[63].end.y   = 3;
+	g->ARC[64].start.x = 5;
+	g->ARC[64].start.y = 4;
+	g->ARC[64].end.x   = 5;
+	g->ARC[64].end.y   = 3;
+	g->ARC[65].start.x = 8;
+	g->ARC[65].start.y = 4;
+	g->ARC[65].end.x   = 8;
+	g->ARC[65].end.y   = 3;
+	
+	g->ARC[66].start.x = 0;
+	g->ARC[66].start.y = 3;
+	g->ARC[66].end.x   = 0;
+	g->ARC[66].end.y   = 2;
+	g->ARC[67].start.x = 3;
+	g->ARC[67].start.y = 3;
+	g->ARC[67].end.x   = 3;
+	g->ARC[67].end.y   = 2;
+	g->ARC[68].start.x = 6;
+	g->ARC[68].start.y = 3;
+	g->ARC[68].end.x   = 6;
+	g->ARC[68].end.y   = 2;
+	
+	g->ARC[69].start.x = 1;
+	g->ARC[69].start.y = 2;
+	g->ARC[69].end.x   = 1;
+	g->ARC[69].end.y   = 1;
+	g->ARC[70].start.x = 4;
+	g->ARC[70].start.y = 2;
+	g->ARC[70].end.x   = 4;
+	g->ARC[70].end.y   = 1;
+	
+	g->ARC[71].start.x = 2;
+	g->ARC[71].start.y = 1;
+	g->ARC[71].end.x   = 2;
+	g->ARC[71].end.y   = 0;
 }
