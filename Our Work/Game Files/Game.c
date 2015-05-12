@@ -265,8 +265,132 @@ int getARC(Game g, path pathToEdge) {
 // INCOMPLETE
 int isLegalAction (Game g, action a) {
 	int isLegalAction = FALSE;
-	// In here will be a bunch of checks for the action.
-	
+   //For player 1
+   while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1)) {
+      // Need to know: How to refer to the vertex
+      // if = vertex existed
+      if (vertex exist)  {
+         makeAction(g, OBTAIN_ARC)
+         getStudents(g, 1, STUDENT_BPS) -= 1;
+         getStudents(g, 1, STUDENT_BQN) -= 1;
+      } else {
+         isLegalAction = FALSE;
+      }
+   } 
+   while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
+              (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
+     if (vertex exist) {
+        makeAction(g, BUILDING_CAMPUS);
+        getStudents(g, 1, STUDENT_BPS) -= 1;
+        getStudents(g, 1, STUDENT_BQN) -= 1;
+        getStudents(g, 1, STUDENT_MJ) -= 1;
+        getStudents(g, 1, STUDENT_MTV) -= 1;
+      } else {
+        isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV) >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
+            //Not sure about path to vertex >=1
+      if (vertex exist) {
+         makeAction(g, BUILD_G08);
+         getStudents(g, 1, STUDENT_MJ) -= 2;
+         getStudents(g, 1, STUDENT_MTV) -= 3;
+         //how to call a building?
+	   } else {
+        isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1) && (getStudents(g, 1, STUDENT_MMONEY) >= 1) {
+      //How to get chances for Patent IP & Publication
+      makeActions(g, START_SPINOFF);
+      getStudents(g, 1, STUDENT_MJ) -= 1;
+      getStudents(g, 1, STUDENT_MTV) -= 1;
+      getStudents(g, 1, STUDENT_MMONEY) -= 1;
+   }
+   //For player 2
+	while ((getStudents(g, 2, STUDENT_BPS) >= 1) && ((getStudents(g, 2, STUDENT_BQN) >= 1)) {
+         // Need to know: How to refer to the vertex
+         // if = vertex existed
+      if (vertex exist)  {
+         makeAction(g, OBTAIN_ARC)
+         getStudents(g, 2, STUDENT_BPS) -= 1;
+         getStudents(g, 2, STUDENT_BQN) -= 1;
+      } else {
+         isLegalAction = FALSE;
+      }
+   } 
+   while ((getStudents(g, 2, STUDENT_BPS) >= 1) && (getStudents(g, 2, STUDENT_BQN) >= 1) &&
+              (getStudents(g, 2, STUDENT_MJ) >= 1) && (getStudents(g, 2, STUDENT_MTV) >= 1)) {
+      if (vertex exist) {
+        makeAction(g, BUILDING_CAMPUS);
+        getStudents(g, 2, STUDENT_BPS) -= 1;
+        getStudents(g, 2, STUDENT_BQN) -= 1;
+        getStudents(g, 2, STUDENT_MJ) -= 1;
+        getStudents(g, 2, STUDENT_MTV) -= 1;
+      } else {
+        isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 2, STUDENT_MJ) >= 2) && (getStudents(g, 2, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
+      //Not sure about path to vertex >=1
+      if (vertex exist) {
+         makeAction(g, BUILD_G08);
+         getStudents(g, 2, STUDENT_MJ) -= 2;
+         getStudents(g, 2, STUDENT_MTV) -= 3;
+      } else {
+         isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 2, STUDENT_MJ) >= 1) && (getStudents(g, 2, STUDENT_MTV) >= 1) && (getStudents(g, 2, STUDENT_MMONEY) >= 1) {
+      //How to get chances for Patent IP & Publication
+      makeActions(g, START_SPINOFF);
+      getStudents(g, 2, STUDENT_MJ) -= 1;
+      getStudents(g, 2, STUDENT_MTV) -= 1;
+      getStudents(g, 2, STUDENT_MMONEY) -= 1;
+   }
+   //For Player 3
+   while ((getStudents(g, 3, STUDENT_BPS) >= 1) && ((getStudents(g, 3, STUDENT_BQN) >= 1)) {
+      // Need to know: How to refer to the vertex
+      // if = vertex existed
+      if (vertex exist)  {
+         makeAction(g, OBTAIN_ARC)
+         getStudents(g, 3, STUDENT_BPS) -= 1;
+         getStudents(g, 3, STUDENT_BQN) -= 1;
+      } else {
+         isLegalAction = FALSE;
+      }
+   } 
+   while ((getStudents(g, 3, STUDENT_BPS) >= 1) && (getStudents(g, 3, STUDENT_BQN) >= 1) &&
+              (getStudents(g, 3, STUDENT_MJ) >= 1) && (getStudents(g, 3, STUDENT_MTV) >= 1)) {
+     if (vertex exist) {
+        makeAction(g, BUILDING_CAMPUS);
+        getStudents(g, 3, STUDENT_BPS) -= 1;
+        getStudents(g, 3, STUDENT_BQN) -= 1;
+        getStudents(g, 3, STUDENT_MJ) -= 1;
+        getStudents(g, 3, STUDENT_MTV) -= 1;
+      } else {
+        isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 3, STUDENT_MJ) >= 2) && (getStudents(g, 3, STUDENT_MTV) >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
+            //Not sure about path to vertex >=1
+      if (vertex exist) {
+         makeAction(g, BUILD_G08);
+         getStudents(g, 3, STUDENT_MJ) -= 2;
+         getStudents(g, 3, STUDENT_MTV) -= 3;
+         //how to call a building?
+	   } else {
+        isLegalAction = FALSE;
+      }
+   }
+   while ((getStudents(g, 3, STUDENT_MJ) >= 1) && (getStudents(g, 3, STUDENT_MTV) >= 1) && (getStudents(g, 3, STUDENT_MMONEY) >= 1) {
+      //How to get chances for Patent IP & Publication
+      makeActions(g, START_SPINOFF);
+      getStudents(g, 3, STUDENT_MJ) -= 1;
+      getStudents(g, 3, STUDENT_MTV) -= 1;
+      getStudents(g, 3, STUDENT_MMONEY) -= 1;
+   }
+   // In here will be a bunch of checks for the action.
 	return isLegalAction;
 }
 
