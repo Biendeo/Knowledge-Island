@@ -5,8 +5,6 @@
 	throwDice();
 		We need to compute paths to buildings, and add resources based
 		on them.
-	convertPath();
-		We need to convert a path to a co-ordinate.
 */
 
 // Thomas Moffet, thomasmoffet, z5061905
@@ -63,8 +61,8 @@ typedef struct _player {
 /// This stores the data of a single ARC grant.
 typedef struct _edge {
 	/// This stores the start and end positions of the road.
-	coord start;
-	coord end;
+	Coord start;
+	Coord end;
 	
 	/// This stores what player this building belongs to.
 	int type;
@@ -73,7 +71,7 @@ typedef struct _edge {
 /// This stores the data of a single campus.
 typedef struct _vertex {
 	/// This stores the position of the campus.
-	coord start;
+	Coord start;
 	
 	/// This stores what player this belongs to (as well as the type).
 	int type;
