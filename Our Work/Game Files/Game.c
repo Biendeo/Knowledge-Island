@@ -1,14 +1,38 @@
 /*
-	For this file, we need to put everything that needs to be stored
-	about the game.
-	
-	Thomas: I think we should give everything player-related (rather
-		than overall) its own struct, and pop that inside this struct.
-		For my own game, I've done it where there's a struct called
-		_player, and it stores their ID, money, and buildingData.
-		We'll design that, and then just add three of those structs
-		inside _game (as each player will need to store the same thing).
+	WHAT NEEDS TO BE DONE:
+	makeAction();
+		Compute what the user has input, and do it. 
+	throwDice();
+		We need to compute paths to buildings, and add resources based
+		on them.
+	convertPath();
+		We need to convert a path to a co-ordinate.
 */
+
+// Thomas Moffet, thomasmoffet, z5061905
+// F09C, Joseph Harris
+// 12/05/2015
+// This program is the underlying functions of Knowledge Island.
+
+/// This is the co-ordinate storage system. Refer to the co-ordinate
+/// diagram to determine where a co-ordinate is on the board.
+// Thomas: I will make a function that converts a path to a co-ord.
+// Since nothing returns a path, we can use this to store the location
+// of objects.
+
+#define NUM_EDGES 72
+#define NUM_VERTICES 54
+
+#define NOT_FOUND -1
+
+#define LEFT 'L'
+#define RIGHT 'R'
+#define BACK 'B'
+
+typedef struct _co-ordinate {
+	char x;
+	char y;
+} Coord;
 
 /// This stores specific data about a player. Just have three of them
 /// in _game.
@@ -23,7 +47,7 @@ typedef struct _player {
 	/// functions with it.
 	int ARCs;
 	int campuses;
-	int G08s;
+	int GO8s;
 	int patents;
 	int papers;
 	
@@ -36,16 +60,24 @@ typedef struct _player {
 	int MMONEYs;
 } Player;
 
-typedef struct _building {
-	/// This stores what type of building it is.
-	int buildingType;
-	
-	/// This stores the path to that building.
-	path path[PATH_LIMIT];
+/// This stores the data of a single ARC grant.
+typedef struct _edge {
+	/// This stores the start and end positions of the road.
+	coord start;
+	coord end;
 	
 	/// This stores what player this building belongs to.
-	int player;
-} Building;
+	int type;
+} Edge;
+
+/// This stores the data of a single campus.
+typedef struct _vertex {
+	/// This stores the position of the campus.
+	coord start;
+	
+	/// This stores what player this belongs to (as well as the type).
+	int type;
+} Vertex;
 
 typedef struct _game {
 	/// This stores what turn the game is up to. In game.h, they start
@@ -56,17 +88,18 @@ typedef struct _game {
 	int whoseTurn;
 	
 	/// This stores the disciplines and dice layout of the board.
-	int discipline[];
-	int dice[];
+	int discipline[NUM_REGIONS];
+	int dice[NUM_REGIONS];
 	
 	/// This stores the exchange rate of resources. It should be stored
 	/// somewhere at least.
 	int exchangeRate;
 	
-	/// This stores all the buildings currently in the game.
-	/// 126 is the maximum number of ARCs and corner resources. We'll
-	/// turn it into a define later.
-	Building b[126];
+	/// This stores all the data of the possible buildings on the board.
+	// Thomas: Are we cool with sorting them like this? I think it'll be
+	// convenient for accessing either campuses or ARCs.
+	Edge ARC[NUM_EDGES];
+	Vertex campus[NUM_VERTICES];
 	
 	/// These store specific data about each player. Their info is
 	/// above.
@@ -75,28 +108,106 @@ typedef struct _game {
 	Player p3;
 } * Game;
 
+/// These are our custom-defined functions. They are at the bottom of
+/// the whole file.
+Coord convertPath(path path);
+short findCampus(Game g, path pathToEdge);
+short findARC(Game g, path pathToEdge);
+void initialiseVertices(Game g);
+void initialiseEdges(Game g);
+
 /// These are the "setters". Basically, when the game starts, these are
 /// the values that are used to initialise the data.
 /// Each array must be "NUM_REGIONS" long.
 /// There's a "#defined" array, that is then stored in an actual array,
 /// which then is used to start the game creation function.
-// Thomas: I figured it out, it's the default map layout.
-/*
-#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, 
-                STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, 
-                STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, 
-                STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, 
-                STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS }
-#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
-*/
 
 /// When the game initalises, you store these numbers into variables,
 /// and then pass that into the initialise function.
-// INCOMPLETE
+// MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
-	Game g;
-	// From here on out, we initialise every other value in our struct.
+	Game g = malloc(sizeof(Game));
+	/// This is used to fill out the discipline and dice layouts.
+	short pos = 0;
+	short pathpos = 0;
 	
+	g->turnNumber = -1;
+	g->whoseTurn = 0;
+	
+	while (pos < 19) {
+		g->discipline[pos] = discipline[pos];
+		g->dice[pos] = dice[pos];
+		pos++;
+	}
+	
+	g->exchangeRate = 3;
+	
+	/// Now we set all the building data.
+	/// All the data is initially "flushed".
+	// We need to make a function that assigns the starts and ends, and
+	// just return void. While order won't matter, every value needs to
+	// be assigned.
+	pos = 0;
+	while (pos < NUM_EDGES) {
+		if (pos < NUM_VERTICES) {
+			g->campus[pos].start.x = 0;
+			g->campus[pos].start.y = 0;
+			g->campus[pos].type = 0;
+		}
+		g->ARC[pos].start.x = 0;
+		g->ARC[pos].start.y = 0;
+		g->ARC[pos].end.x = 0;
+		g->ARC[pos].end.y = 0;
+		g->ARC[pos].type = 0;
+		pos++;
+	}
+	
+	/// Then, each vertex and edge is assigned a position. These start
+	/// from the top-left, and go row-by-row.
+	initialiseVertices(g);
+	initialiseEdges(g);
+	
+	/// Now the player data.
+	// Some of this we can set right away.
+	g->p1.playerID = UNI_A;
+	g->p1.KPIs = 0;
+	g->p1.ARCs = 0;
+	g->p1.campuses = 0;
+	g->p1.GO8s = 0;
+	g->p1.patents = 0;
+	g->p1.papers = 0;
+	g->p1.THDs = 0;
+	g->p1.BPSs = 0;
+	g->p1.BQNs = 0;
+	g->p1.MJs = 0;
+	g->p1.MTVs = 0;
+	g->p1.MMONEYs = 0;
+	g->p2.playerID = UNI_A;
+	g->p2.KPIs = 0;
+	g->p2.ARCs = 0;
+	g->p2.campuses = 0;
+	g->p2.GO8s = 0;
+	g->p2.patents = 0;
+	g->p2.papers = 0;
+	g->p2.THDs = 0;
+	g->p2.BPSs = 0;
+	g->p2.BQNs = 0;
+	g->p2.MJs = 0;
+	g->p2.MTVs = 0;
+	g->p2.MMONEYs = 0;
+	g->p3.playerID = UNI_C;
+	g->p3.KPIs = 0;
+	g->p3.ARCs = 0;
+	g->p3.campuses = 0;
+	g->p3.GO8s = 0;
+	g->p3.patents = 0;
+	g->p3.papers = 0;
+	g->p3.THDs = 0;
+	g->p3.BPSs = 0;
+	g->p3.BQNs = 0;
+	g->p3.MJs = 0;
+	g->p3.MTVs = 0;
+	g->p3.MMONEYs = 0;
 	return g;
 }
 
@@ -113,14 +224,18 @@ void makeAction (Game g, action a) {
 }
 
 /// This advances the game to the next turn. It increases the turn
-/// number, and gives a dice roll.
-// advance the game to the next turn, 
-// assuming that the dice has just been rolled and produced diceScore
-// the game starts in turn -1 (we call this state "Terra Nullis") and 
-// moves to turn 0 as soon as the first dice is thrown. 
+/// number, and computes a dice roll given.
 // INCOMPLETE
 void throwDice (Game g, int diceScore) {
+	/// Firstly, we increase the turn.
+	g->turnNumber++;
+	g->whoseTurn++;
+	if (g->whoseTurn > NUM_UNIS) {
+		g->whoseTurn = UNI_A;
+	}
 	
+	/// Then we give everyone resources based on the dice roll.
+	// ADD 
 }
 
 /// These are the "getter" functions. They return something based on
@@ -220,19 +335,29 @@ int getWhoseTurn (Game g) {
 }
 
 /// This asks for a path to a vertex, and returns what is on it.
-// INCOMPLETE
 int getCampus(Game g, path pathToVertex) {
 	int whatCampus = VACANT_ARC;
 	
+	short ID = findCampus(g, pathToVertex);
+	
+	if (ID != NOT_FOUND) {
+		whatArc = g->campus[ID].type;
+	}
 	return whatCampus;
 }
 
-/// This asks for a path to an edge, and returns what is on it.
-// INCOMPLETE
-int getARC(Game g, path pathToEdge) {
+/// This asks for a path to an edge, and returns what is on it.int getARC(Game g, path pathToEdge) {
 	int whatARC = VACANT_ARC;
+	short pathpos = 0;
+	short arrayPos = 0;
 	
-	return whatARC;
+	// findARC returns what member of the array is that specific ARC.
+	short ID = findARC(g, pathToEdge);
+	
+	if (ID != NOT_FOUND) {
+		whatArc = g->ARC[ID].type;
+	}
+		return whatARC;
 }
 
 /// This asks for a action, and returns TRUE if you can do it, or FALSE
@@ -306,17 +431,17 @@ int getARCs (Game g, int player) {
 
 /// This asks for a player, and returns how many GO8s they have.
 int getGO8s (Game g, int player) {
-	int howManyG08s = 0;
+	int howManyGO8s = 0;
 	
 	if (player == ARC_A) {
-		howManyG08s = g->p1.G08s;
+		howManyGO8s = g->p1.GO8s;
 	} else if (player == ARC_B) {
-		howManyG08s = g->p2.G08s;
+		howManyGO8s = g->p2.GO8s;
 	} else if (player == ARC_C) {
-		howManyG08s = g->p3.G08s;
+		howManyGO8s = g->p3.GO8s;
 	}
 	
-	return howManyG08s;
+	return howManyGO8s;
 }
 
 /// This asks for a player, and returns how many campuses they have.
@@ -424,4 +549,595 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	// or something, but for now it'll just be 3. This doesn't use any
 	// data yet.
 	return exchangeRate;
+}
+
+/// This function converts a path from the starting vertex into a
+/// triangle co-ordinate. Refer to the diagram to check these values.
+// INCOMPLETE
+Coord convertPath(path path) {
+	Coord coord;
+	/// These are the starting co-ords from the beginning of a path.
+	coord.x = 7;
+	coord.y = 10;
+	/// This is the direction the path is facing.
+	/// If the direction value is n then it is facing at (2n+1) o'clock.
+	short direction = 2;
+	/// This tracks where we are in the path.
+	short pos = 0;
+	
+	/// When the path ends, we stop moving the co-ordinate.
+	while ((path[pos] == LEFT) || (path[pos] == RIGHT) ||
+	                              (path[pos] == BACK)) {
+		if (direction == 0) {
+			if (path[pos] == LEFT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == BACK) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			}
+		} else if (direction == 1) {
+			if (path[pos] == LEFT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == RIGHT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 4;
+				coord.x--;
+			}
+		} else if (direction == 2) {
+			if (path[pos] == LEFT) {
+				direction = 1;
+				coord.x++;
+			} else if (path[pos] == RIGHT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == BACK) {
+				direction = 5;
+				coord.y++;
+			}
+		} else if (direction == 3) {
+			if (path[pos] == LEFT) {
+				direction = 2;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == BACK) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			}
+		} else if (direction == 4) {
+			if (path[pos] == LEFT) {
+				direction = 3;
+				coord.x--;
+				coord.y--;
+			} else if (path[pos] == RIGHT) {
+				direction = 5;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 1;
+				coord.x++;
+			}
+		} else if (direction == 5) {
+			if (path[pos] == LEFT) {
+				direction = 4;
+				coord.x--;
+			} else if (path[pos] == RIGHT) {
+				direction = 0;
+				coord.x++;
+				coord.y++;
+			} else if (path[pos] == BACK) {
+				direction = 2;
+				coord.y--;
+			}
+		}
+		pos++;
+	}
+	
+	return returnCoord;
+}
+
+/// This function compares a coordinate with the campuses stored in
+/// memory, and returns the array position of the matching one, or
+/// NOT_FOUND if no match was found.
+short findCampus(Game g, Coord coord) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+	
+	/// Every vertex is checked until the given co-ordinate's x and y
+	/// values match that vertex's. Then, it breaks and returns that ID.
+	while ((pos < NUM_VERTICES) && (ID == NOT_FOUND)) {
+		if ((coord.x == g->campus[pos].start.x) &&
+		    (coord.y == g->campus[pos].start.y)) {
+			ID = pos;
+		}
+		pos++;
+	}
+	
+	return ID;
+}
+
+/// This is the same as above, just with two coords for edges.
+short findARC(Game g, Coord start, Coord end) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+	
+	/// Every edge is checked until the given co-ordinate's x and y
+	/// values match that edge's. Then, it breaks and returns that ID.
+	/// It checks if either of the ends of an edge match
+	while ((pos < NUM_EDGES) && (ID == NOT_FOUND)) {
+		if ((start.x == g->campus[pos].start.x) &&
+		    (start.y == g->campus[pos].start.y)) {
+			if ((end.x == g->campus[pos].end.x) &&
+		    (end.y == g->campus[pos].end.y)) {
+				ID = pos;
+			}
+		} else if ((start.x == g->campus[pos].end.x) &&
+		           (start.y == g->campus[pos].end.y)) {
+				if ((end.x == g->campus[pos].start.x) &&
+		            (end.y == g->campus[pos].start.y)) {
+					ID = pos;	
+				}
+			}
+		pos++;
+	}
+	
+	return ID;
+}
+
+void initialiseVertices(Game g) {
+	/// These are arranged by rows.
+	g->campus[ 0].start.x = 7;
+	g->campus[ 0].start.y = 10;
+	g->campus[ 1].start.x = 8;
+	g->campus[ 1].start.y = 10;
+	
+	g->campus[ 2].start.x = 5;
+	g->campus[ 2].start.y = 9;
+	g->campus[ 3].start.x = 6;
+	g->campus[ 3].start.y = 9;
+	g->campus[ 4].start.x = 8;
+	g->campus[ 4].start.y = 9;
+	g->campus[ 5].start.x = 9;
+	g->campus[ 5].start.y = 9;
+	
+	g->campus[ 6].start.x = 3;
+	g->campus[ 6].start.y = 8;
+	g->campus[ 7].start.x = 4;
+	g->campus[ 7].start.y = 8;
+	g->campus[ 8].start.x = 6;
+	g->campus[ 8].start.y = 8;
+	g->campus[ 9].start.x = 7;
+	g->campus[ 9].start.y = 8;
+	g->campus[10].start.x = 9;
+	g->campus[10].start.y = 8;
+	g->campus[11].start.x = 10;
+	g->campus[11].start.y = 8;
+	
+	g->campus[12].start.x = 2;
+	g->campus[12].start.y = 7;
+	g->campus[13].start.x = 4;
+	g->campus[13].start.y = 7;
+	g->campus[14].start.x = 5;
+	g->campus[14].start.y = 7;
+	g->campus[15].start.x = 7;
+	g->campus[15].start.y = 7;
+	g->campus[16].start.x = 8;
+	g->campus[16].start.y = 7;
+	g->campus[17].start.x = 10;
+	g->campus[17].start.y = 7;
+	
+	g->campus[18].start.x = 2;
+	g->campus[18].start.y = 6;
+	g->campus[19].start.x = 3;
+	g->campus[19].start.y = 6;
+	g->campus[20].start.x = 5;
+	g->campus[20].start.y = 6;
+	g->campus[21].start.x = 6;
+	g->campus[21].start.y = 6;
+	g->campus[22].start.x = 8;
+	g->campus[22].start.y = 6;
+	g->campus[23].start.x = 9;
+	g->campus[23].start.y = 6;
+	
+	g->campus[24].start.x = 1;
+	g->campus[24].start.y = 5;
+	g->campus[25].start.x = 3;
+	g->campus[25].start.y = 5;
+	g->campus[26].start.x = 4;
+	g->campus[26].start.y = 5;
+	g->campus[27].start.x = 6;
+	g->campus[27].start.y = 5;
+	g->campus[28].start.x = 7;
+	g->campus[28].start.y = 5;
+	g->campus[29].start.x = 9;
+	g->campus[29].start.y = 5;
+	
+	g->campus[30].start.x = 1;
+	g->campus[30].start.y = 4;
+	g->campus[31].start.x = 2;
+	g->campus[31].start.y = 4;
+	g->campus[32].start.x = 4;
+	g->campus[32].start.y = 4;
+	g->campus[33].start.x = 5;
+	g->campus[33].start.y = 4;
+	g->campus[34].start.x = 7;
+	g->campus[34].start.y = 4;
+	g->campus[35].start.x = 8;
+	g->campus[35].start.y = 4;
+	
+	g->campus[36].start.x = 0;
+	g->campus[36].start.y = 3;
+	g->campus[37].start.x = 2;
+	g->campus[37].start.y = 3;
+	g->campus[38].start.x = 3;
+	g->campus[38].start.y = 3;
+	g->campus[39].start.x = 5;
+	g->campus[39].start.y = 3;
+	g->campus[40].start.x = 6;
+	g->campus[40].start.y = 3;
+	g->campus[41].start.x = 8;
+	g->campus[41].start.y = 3;
+	
+	g->campus[42].start.x = 0;
+	g->campus[42].start.y = 2;
+	g->campus[43].start.x = 1;
+	g->campus[43].start.y = 2;
+	g->campus[44].start.x = 3;
+	g->campus[44].start.y = 2;
+	g->campus[45].start.x = 4;
+	g->campus[45].start.y = 2;
+	g->campus[46].start.x = 6;
+	g->campus[46].start.y = 2;
+	g->campus[47].start.x = 7;
+	g->campus[47].start.y = 2;
+	
+	g->campus[46].start.x = 1;
+	g->campus[46].start.y = 1;
+	g->campus[47].start.x = 2;
+	g->campus[47].start.y = 1;
+	g->campus[48].start.x = 4;
+	g->campus[48].start.y = 1;
+	g->campus[49].start.x = 5;
+	g->campus[49].start.y = 1;
+	
+	g->campus[50].start.x = 2;
+	g->campus[50].start.y = 0;
+	g->campus[51].start.x = 3;
+	g->campus[51].start.y = 0;
+}
+
+void intialiseEdges(Game g) {
+	/// These are arranged by rows.
+	/// Firstly, horizontal edges.
+	g->ARC[ 0].start.x = 7;
+	g->ARC[ 0].start.y = 10;
+	g->ARC[ 0].end.x   = 8;
+	g->ARC[ 0].end.y   = 10;
+	
+	g->ARC[ 1].start.x = 5;
+	g->ARC[ 1].start.y = 9;
+	g->ARC[ 1].end.x   = 6;
+	g->ARC[ 1].end.y   = 9;
+	g->ARC[ 2].start.x = 8;
+	g->ARC[ 2].start.y = 9;
+	g->ARC[ 2].end.x   = 9;
+	g->ARC[ 2].end.y   = 9;
+	
+	g->ARC[ 3].start.x = 3;
+	g->ARC[ 3].start.y = 8;
+	g->ARC[ 3].end.x   = 4;
+	g->ARC[ 3].end.y   = 8;
+	g->ARC[ 4].start.x = 6;
+	g->ARC[ 4].start.y = 8;
+	g->ARC[ 4].end.x   = 7;
+	g->ARC[ 4].end.y   = 8;
+	g->ARC[ 5].start.x = 9;
+	g->ARC[ 5].start.y = 8;
+	g->ARC[ 5].end.x   = 10;
+	g->ARC[ 5].end.y   = 8;
+	
+	g->ARC[ 6].start.x = 4;
+	g->ARC[ 6].start.y = 7;
+	g->ARC[ 6].end.x   = 5;
+	g->ARC[ 6].end.y   = 7;
+	g->ARC[ 7].start.x = 7;
+	g->ARC[ 7].start.y = 7;
+	g->ARC[ 7].end.x   = 8;
+	g->ARC[ 7].end.y   = 7;
+	
+	g->ARC[ 8].start.x = 2;
+	g->ARC[ 8].start.y = 6;
+	g->ARC[ 8].end.x   = 3;
+	g->ARC[ 8].end.y   = 6;
+	g->ARC[ 9].start.x = 5;
+	g->ARC[ 9].start.y = 6;
+	g->ARC[ 9].end.x   = 6;
+	g->ARC[ 9].end.y   = 6;
+	g->ARC[10].start.x = 8;
+	g->ARC[10].start.y = 6;
+	g->ARC[10].end.x   = 9;
+	g->ARC[10].end.y   = 6;
+	
+	g->ARC[11].start.x = 3;
+	g->ARC[11].start.y = 5;
+	g->ARC[11].end.x   = 4;
+	g->ARC[11].end.y   = 5;
+	g->ARC[12].start.x = 6;
+	g->ARC[12].start.y = 5;
+	g->ARC[12].end.x   = 7;
+	g->ARC[12].end.y   = 5;
+	
+	g->ARC[13].start.x = 1;
+	g->ARC[13].start.y = 4;
+	g->ARC[13].end.x   = 2;
+	g->ARC[13].end.y   = 4;
+	g->ARC[14].start.x = 4;
+	g->ARC[14].start.y = 4;
+	g->ARC[14].end.x   = 5;
+	g->ARC[14].end.y   = 4;
+	g->ARC[15].start.x = 7;
+	g->ARC[15].start.y = 4;
+	g->ARC[15].end.x   = 8;
+	g->ARC[15].end.y   = 4;
+	
+	g->ARC[16].start.x = 2;
+	g->ARC[16].start.y = 3;
+	g->ARC[16].end.x   = 3;
+	g->ARC[16].end.y   = 3;
+	g->ARC[17].start.x = 5;
+	g->ARC[17].start.y = 3;
+	g->ARC[17].end.x   = 6;
+	g->ARC[17].end.y   = 3;
+	
+	g->ARC[18].start.x = 0;
+	g->ARC[18].start.y = 2;
+	g->ARC[18].end.x   = 1;
+	g->ARC[18].end.y   = 2;
+	g->ARC[19].start.x = 3;
+	g->ARC[19].start.y = 2;
+	g->ARC[19].end.x   = 4;
+	g->ARC[19].end.y   = 2;
+	g->ARC[20].start.x = 6;
+	g->ARC[20].start.y = 2;
+	g->ARC[20].end.x   = 7;
+	g->ARC[20].end.y   = 2;
+	
+	g->ARC[21].start.x = 1;
+	g->ARC[21].start.y = 1;
+	g->ARC[21].end.x   = 2;
+	g->ARC[21].end.y   = 1;
+	g->ARC[22].start.x = 4;
+	g->ARC[22].start.y = 1;
+	g->ARC[22].end.x   = 5;
+	g->ARC[22].end.y   = 1;
+	
+	g->ARC[23].start.x = 2;
+	g->ARC[23].start.y = 0;
+	g->ARC[23].end.x   = 3;
+	g->ARC[23].end.y   = 0;
+	
+	/// Secondly, edges that go up-right.
+	g->ARC[24].start.x = 6;
+	g->ARC[24].start.y = 9;
+	g->ARC[24].end.x   = 7;
+	g->ARC[24].end.y   = 10;
+	
+	g->ARC[25].start.x = 4;
+	g->ARC[25].start.y = 8;
+	g->ARC[25].end.x   = 5;
+	g->ARC[25].end.y   = 9;
+	g->ARC[26].start.x = 7;
+	g->ARC[26].start.y = 8;
+	g->ARC[26].end.x   = 8;
+	g->ARC[26].end.y   = 9;
+	
+	g->ARC[27].start.x = 2;
+	g->ARC[27].start.y = 7;
+	g->ARC[27].end.x   = 3;
+	g->ARC[27].end.y   = 8;
+	g->ARC[28].start.x = 5;
+	g->ARC[28].start.y = 7;
+	g->ARC[28].end.x   = 6;
+	g->ARC[28].end.y   = 8;
+	g->ARC[29].start.x = 8;
+	g->ARC[29].start.y = 7;
+	g->ARC[29].end.x   = 9;
+	g->ARC[29].end.y   = 8;
+	
+	g->ARC[30].start.x = 3;
+	g->ARC[30].start.y = 6;
+	g->ARC[30].end.x   = 4;
+	g->ARC[30].end.y   = 7;
+	g->ARC[31].start.x = 6;
+	g->ARC[31].start.y = 6;
+	g->ARC[31].end.x   = 7;
+	g->ARC[31].end.y   = 7;
+	g->ARC[32].start.x = 9;
+	g->ARC[32].start.y = 6;
+	g->ARC[32].end.x   = 10;
+	g->ARC[32].end.y   = 7;
+	
+	g->ARC[33].start.x = 1;
+	g->ARC[33].start.y = 5;
+	g->ARC[33].end.x   = 2;
+	g->ARC[33].end.y   = 6;
+	g->ARC[34].start.x = 4;
+	g->ARC[34].start.y = 5;
+	g->ARC[34].end.x   = 5;
+	g->ARC[34].end.y   = 6;
+	g->ARC[35].start.x = 7;
+	g->ARC[35].start.y = 5;
+	g->ARC[35].end.x   = 8;
+	g->ARC[35].end.y   = 6;
+	
+	g->ARC[36].start.x = 2;
+	g->ARC[36].start.y = 4;
+	g->ARC[36].end.x   = 3;
+	g->ARC[36].end.y   = 5;
+	g->ARC[37].start.x = 5;
+	g->ARC[37].start.y = 4;
+	g->ARC[37].end.x   = 6;
+	g->ARC[37].end.y   = 5;
+	g->ARC[38].start.x = 8;
+	g->ARC[38].start.y = 4;
+	g->ARC[38].end.x   = 9;
+	g->ARC[38].end.y   = 5;
+	
+	g->ARC[39].start.x = 0;
+	g->ARC[39].start.y = 3;
+	g->ARC[39].end.x   = 1;
+	g->ARC[39].end.y   = 4;
+	g->ARC[40].start.x = 3;
+	g->ARC[40].start.y = 3;
+	g->ARC[40].end.x   = 4;
+	g->ARC[40].end.y   = 4;
+	g->ARC[41].start.x = 6;
+	g->ARC[41].start.y = 3;
+	g->ARC[41].end.x   = 7;
+	g->ARC[41].end.y   = 4;
+	
+	g->ARC[42].start.x = 1;
+	g->ARC[42].start.y = 2;
+	g->ARC[42].end.x   = 2;
+	g->ARC[42].end.y   = 3;
+	g->ARC[43].start.x = 4;
+	g->ARC[43].start.y = 2;
+	g->ARC[43].end.x   = 5;
+	g->ARC[43].end.y   = 3;
+	g->ARC[44].start.x = 7;
+	g->ARC[44].start.y = 2;
+	g->ARC[44].end.x   = 8;
+	g->ARC[44].end.y   = 3;
+	
+	g->ARC[45].start.x = 2;
+	g->ARC[45].start.y = 1;
+	g->ARC[45].end.x   = 3;
+	g->ARC[45].end.y   = 2;
+	g->ARC[46].start.x = 5;
+	g->ARC[46].start.y = 1;
+	g->ARC[46].end.x   = 6;
+	g->ARC[46].end.y   = 2;
+	
+	g->ARC[47].start.x = 3;
+	g->ARC[47].start.y = 0;
+	g->ARC[47].end.x   = 4;
+	g->ARC[47].end.y   = 1;
+	
+	/// Finally, edges that go down-right.
+	g->ARC[48].start.x = 8;
+	g->ARC[48].start.y = 10;
+	g->ARC[48].end.x   = 8;
+	g->ARC[48].end.y   = 9;
+	
+	g->ARC[49].start.x = 6;
+	g->ARC[49].start.y = 9;
+	g->ARC[49].end.x   = 6;
+	g->ARC[49].end.y   = 8;
+	g->ARC[50].start.x = 9;
+	g->ARC[50].start.y = 9;
+	g->ARC[50].end.x   = 9;
+	g->ARC[50].end.y   = 8;
+	
+	g->ARC[51].start.x = 4;
+	g->ARC[51].start.y = 8;
+	g->ARC[51].end.x   = 4;
+	g->ARC[51].end.y   = 7;
+	g->ARC[52].start.x = 7;
+	g->ARC[52].start.y = 8;
+	g->ARC[52].end.x   = 7;
+	g->ARC[52].end.y   = 7;
+	g->ARC[53].start.x = 10;
+	g->ARC[53].start.y = 8;
+	g->ARC[53].end.x   = 10;
+	g->ARC[53].end.y   = 7;
+	
+	g->ARC[54].start.x = 2;
+	g->ARC[54].start.y = 7;
+	g->ARC[54].end.x   = 2;
+	g->ARC[54].end.y   = 6;
+	g->ARC[55].start.x = 5;
+	g->ARC[55].start.y = 7;
+	g->ARC[55].end.x   = 5;
+	g->ARC[55].end.y   = 6;
+	g->ARC[56].start.x = 8;
+	g->ARC[56].start.y = 7;
+	g->ARC[56].end.x   = 8;
+	g->ARC[56].end.y   = 6;
+	
+	g->ARC[57].start.x = 3;
+	g->ARC[57].start.y = 6;
+	g->ARC[57].end.x   = 3;
+	g->ARC[57].end.y   = 5;
+	g->ARC[58].start.x = 6;
+	g->ARC[58].start.y = 6;
+	g->ARC[58].end.x   = 6;
+	g->ARC[58].end.y   = 5;
+	g->ARC[59].start.x = 9;
+	g->ARC[59].start.y = 6;
+	g->ARC[59].end.x   = 9;
+	g->ARC[59].end.y   = 5;
+	
+	g->ARC[60].start.x = 1;
+	g->ARC[60].start.y = 5;
+	g->ARC[60].end.x   = 1;
+	g->ARC[60].end.y   = 4;
+	g->ARC[61].start.x = 4;
+	g->ARC[61].start.y = 5;
+	g->ARC[61].end.x   = 4;
+	g->ARC[61].end.y   = 4;
+	g->ARC[62].start.x = 7;
+	g->ARC[62].start.y = 5;
+	g->ARC[62].end.x   = 7;
+	g->ARC[62].end.y   = 4;
+	
+	g->ARC[63].start.x = 2;
+	g->ARC[63].start.y = 4;
+	g->ARC[63].end.x   = 2;
+	g->ARC[63].end.y   = 3;
+	g->ARC[64].start.x = 5;
+	g->ARC[64].start.y = 4;
+	g->ARC[64].end.x   = 5;
+	g->ARC[64].end.y   = 3;
+	g->ARC[65].start.x = 8;
+	g->ARC[65].start.y = 4;
+	g->ARC[65].end.x   = 8;
+	g->ARC[65].end.y   = 3;
+	
+	g->ARC[66].start.x = 0;
+	g->ARC[66].start.y = 3;
+	g->ARC[66].end.x   = 0;
+	g->ARC[66].end.y   = 2;
+	g->ARC[67].start.x = 3;
+	g->ARC[67].start.y = 3;
+	g->ARC[67].end.x   = 3;
+	g->ARC[67].end.y   = 2;
+	g->ARC[68].start.x = 6;
+	g->ARC[68].start.y = 3;
+	g->ARC[68].end.x   = 6;
+	g->ARC[68].end.y   = 2;
+	
+	g->ARC[69].start.x = 1;
+	g->ARC[69].start.y = 2;
+	g->ARC[69].end.x   = 1;
+	g->ARC[69].end.y   = 1;
+	g->ARC[70].start.x = 4;
+	g->ARC[70].start.y = 2;
+	g->ARC[70].end.x   = 4;
+	g->ARC[70].end.y   = 1;
+	
+	g->ARC[71].start.x = 2;
+	g->ARC[71].start.y = 1;
+	g->ARC[71].end.x   = 2;
+	g->ARC[71].end.y   = 0;
 }
