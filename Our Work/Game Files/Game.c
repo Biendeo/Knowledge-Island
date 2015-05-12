@@ -113,8 +113,8 @@ typedef struct _game {
 /// These are our custom-defined functions. They are at the bottom of
 /// the whole file.
 Coord convertPath(path path);
-short findCampus(Game g, path pathToEdge);
-short findARC(Game g, path pathToEdge);
+short findCampus(Game g, Coord coord);
+short findARC(Game g, Coord start, Coord end);
 void initialiseVertices(Game g);
 void initialiseEdges(Game g);
 
@@ -266,7 +266,7 @@ int getMostARCs (Game g) {
 	if (p1ARCs > p2ARCs) {
 		returnPlayer = ARC_A;
 	} else if (p1ARCs < p2ARCs) {
-		returnPlayer = ARC_B
+		returnPlayer = ARC_B;
 	}
 	
 	if (returnPlayer == ARC_A) {
@@ -300,7 +300,7 @@ int getMostPublications (Game g) {
 	if (p1papers > p2papers) {
 		returnPlayer = ARC_A;
 	} else if (p1papers < p2papers) {
-		returnPlayer = ARC_B
+		returnPlayer = ARC_B;
 	}
 	
 	if (returnPlayer == ARC_A) {
@@ -340,26 +340,50 @@ int getWhoseTurn (Game g) {
 int getCampus(Game g, path pathToVertex) {
 	int whatCampus = VACANT_ARC;
 	
-	short ID = findCampus(g, pathToVertex);
+	/// We firstly convert the path to a co-ordinate.
+	Coord start = convertPath(pathToVertex);
 	
+	/// Then we find which campus relates to that.
+	short ID = findCampus(g, start);
+	
+	/// If we found a vertex, we return
 	if (ID != NOT_FOUND) {
-		whatArc = g->campus[ID].type;
+		whatCampus = g->campus[ID].type;
 	}
+	
 	return whatCampus;
 }
 
-/// This asks for a path to an edge, and returns what is on it.int getARC(Game g, path pathToEdge) {
+/// This asks for a path to an edge, and returns what is on it.
+int getARC(Game g, path pathToEdge) {
 	int whatARC = VACANT_ARC;
-	short pathpos = 0;
-	short arrayPos = 0;
+	short pathsize = 0;
 	
-	// findARC returns what member of the array is that specific ARC.
-	short ID = findARC(g, pathToEdge);
+	/// The end of the edge relates to the whole path.
+	Coord end = convertPath(pathToEdge);
 	
-	if (ID != NOT_FOUND) {
-		whatArc = g->ARC[ID].type;
+	/// To find the start, we truncate the last term of the path.
+	while ((pathToEdge[pathsize] == 'R') ||
+	       (pathToEdge[pathsize] == 'L') ||
+           (pathToEdge[pathsize] == 'B')) {
+		pathsize++;
 	}
-		return whatARC;
+	pathsize--;
+	/// And we replace it with a dummy character.
+	pathToEdge[pathsize] = 0;
+	
+	/// That way, the path stops at the beginning.
+	Coord start = convertPath(pathToEdge);
+	
+	/// Then, we find which edge is being referred to.
+	short ID = findARC(g, start, end);
+	
+	/// And then get what type is on it.
+	if (ID != NOT_FOUND) {
+		whatARC = g->ARC[ID].type;
+	}
+	
+	return whatARC;
 }
 
 /// This asks for a action, and returns TRUE if you can do it, or FALSE
@@ -646,7 +670,7 @@ Coord convertPath(path path) {
 		pos++;
 	}
 	
-	return returnCoord;
+	return coord;
 }
 
 /// This function compares a coordinate with the campuses stored in

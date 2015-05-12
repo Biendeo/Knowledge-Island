@@ -131,6 +131,8 @@ int playTurn(Game g) {
 		if (checkWin(g) != FALSE) {
 			a.actionCode = PASS; 
 		}
+	  }
+	}
 	
 	return EXIT_SUCCESS;
 }
