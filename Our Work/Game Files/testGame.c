@@ -20,7 +20,6 @@
 
 
 int main(int argc, char *argv[]) {
-<<<<<<< HEAD
    action discFrom;
    discFrom = 3;
    //if discFrom = 3
@@ -41,7 +40,6 @@ int main(int argc, char *argv[]) {
    printf ("You've passed all test!");
    printf ("You're awesome!");
 	// MAIN STUFF, ADD THIS WHEN THE PLAN IS DONE.
-=======
 	/// Firstly, the game loads the default map data, and then uses that
 	/// to initialise the game (g).
 	int disciplines[] = DEFAULT_DISCIPLINES;
@@ -194,5 +192,4 @@ int main(int argc, char *argv[]) {
 	
 	printf("All tests passed, you are Awesome!\n");
 	return EXIT_SUCCESS;
->>>>>>> origin/Pua
 }
