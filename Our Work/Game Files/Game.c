@@ -109,6 +109,8 @@ typedef struct _game {
 Coord convertPath(path path);
 short findCampus(Game g, path pathToEdge);
 short findARC(Game g, path pathToEdge);
+void initialiseVertices(Game g);
+void initialiseEdges(Game g);
 
 /// These are the "setters". Basically, when the game starts, these are
 /// the values that are used to initialise the data.
@@ -143,11 +145,14 @@ Game newGame (int discipline[], int dice[]) {
 	pos = 0;
 	while (pos < NUM_EDGES) {
 		if (pos < NUM_VERTICES) {
-			g->campus[pos].start = 0;
+			g->campus[pos].start.x = 0;
+			g->campus[pos].start.y = 0;
 			g->campus[pos].type = 0;
 		}
-		g->ARC[pos].start = 0;
-		g->ARC[pos].end = 0;
+		g->ARC[pos].start.x = 0;
+		g->ARC[pos].start.y = 0;
+		g->ARC[pos].end.x = 0;
+		g->ARC[pos].end.y = 0;
 		g->ARC[pos].type = 0;
 		pos++;
 	}
@@ -591,4 +596,12 @@ short findARC(Game g, Coord start, Coord end) {
 	}
 	
 	return ID;
+}
+
+void initialiseVertices(Game g) {
+	g->ARC[p]
+}
+
+void intialiseEdges(Game g) {
+	
 }
