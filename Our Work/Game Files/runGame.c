@@ -91,11 +91,11 @@ int playTurn(Game g) {
 	action a;
 	a.actionCode = 8;
 	
-	while (action.actionCode != PASS) {
+	while (a.actionCode != PASS) {
       /// building arc branch
       /// can cts build if you have the resources
       
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1)) {
+      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1))) {
          // Need to know: How to refer to the vertex
          // if = vertex existed
          if (/*vertex exist*/)  {
@@ -165,7 +165,7 @@ void printWinner(Game g, int hasWon) {
 
 int makeDiceValue(void) {
 	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
-        int pos = rand()%36;
-        int diceValue = permutation[pos];
+	int pos = rand() % 36;
+	int diceValue = permutation[pos];
 	return diceValue;
 }
