@@ -8,12 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> /// For the random dice roll function.
-
 #include "Game.h"
 
-#define TRUE !FALSE
-#define FALSE 0
 #define POINTS_TO_WIN 150
+
+#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
+                STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
+                STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS }
+#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
 
 int playTurn(Game g);
 int checkWin(Game g);
@@ -85,17 +89,17 @@ int playTurn(Game g) {
 	/// The action is created. The action is given a value so that it
 	/// doesn't accidentally skip the user's turn.
 	action a;
-	action.actionCode = 8;
+	a.actionCode = 8;
 	
-	while (action.actionCode != PASS) {
+	while (a.actionCode != PASS) {
       /// building arc branch
       /// can cts build if you have the resources
       
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1)) {
+      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1))) {
          // Need to know: How to refer to the vertex
          // if = vertex existed
          if (/*vertex exist*/)  {
-            action.actionCode == OBTAIN_ARC;
+            a.actionCode == OBTAIN_ARC;
             getStudents(g, 1, STUDENT_BPS) -= 1;
             getStudents(g, 1, STUDENT_BQN) -= 1;
          }
@@ -103,7 +107,7 @@ int playTurn(Game g) {
       while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
               (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
          if (/*vertex exist*/) {
-            action.actionCode == BUILD_CAMPUS;
+            a.actionCode == BUILD_CAMPUS;
             getStudents(g, 1, STUDENT_BPS) -= 1;
             getStudents(g, 1, STUDENT_BQN) -= 1;
             getStudents(g, 1, STUDENT_MJ) -= 1;
@@ -113,20 +117,22 @@ int playTurn(Game g) {
       while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
             //Not sure about path to vertex >=1
          if (/*vertex exist*/) {
-            action.actionCode == BUILD_G08;
+            a.actionCode == BUILD_G08;
             getStudents(g, 1, STUDENT_MJ) -= 2;
             getStudents(g, 1, STUDENT_MTV) -= 3;
             //how to call a building?
          }
-		// Here, the user needs to input an action.
-		scanf("%d", &action.actionCode); // scans user input
+		// Here, the user needs to input an a.
+		scanf("%d", &a.actionCode); // scans user input
 		if (isLegalAction(g, a) == TRUE) {
 			makeAction(g, a);	
 		}
 		//checks if player wins game after their action
 		if (checkWin(g) != FALSE) {
-			action.actionCode = PASS; 
+			a.actionCode = PASS; 
 		}
+	  }
+	}
 	
 	return EXIT_SUCCESS;
 }
@@ -161,7 +167,7 @@ void printWinner(Game g, int hasWon) {
 
 int makeDiceValue(void) {
 	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
-        int pos = rand()%36;
-        int diceValue = permutation[pos];
+	int pos = rand() % 36;
+	int diceValue = permutation[pos];
 	return diceValue;
 }
