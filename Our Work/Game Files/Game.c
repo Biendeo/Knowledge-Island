@@ -113,6 +113,8 @@ typedef struct _game {
 /// These are our custom-defined functions. They are at the bottom of
 /// the whole file.
 Coord convertPath(path path);
+short getCampusID(Game g, path path);
+short getARCID(Game g, path path);
 short findCampus(Game g, Coord coord);
 short findARC(Game g, Coord start, Coord end);
 void initialiseVertices(Game g);
@@ -224,11 +226,38 @@ void makeAction (Game g, action a) {
 	if (a.actionCode == PASS) {
 		/// We don't do anything.
 	} else if (a.actionCode == BUILD_CAMPUS) {
-		// This accepts a path to a vertex.
+		/// If they build a campus, first we find what vertex ID they
+		/// are referring to, then we change it to that player's campus.
+		short ID = getCampusID(g, a.destination);
+		if (g->whoseTurn == UNI_A) {
+			g->campus[ID].type = CAMPUS_A;
+		} else if (g->whoseTurn == UNI_B) {
+			g->campus[ID].type = CAMPUS_B;
+		} else if (g->whoseTurn == UNI_C) {
+			g->campus[ID].type = CAMPUS_C;
+		}
 	} else if (a.actionCode == BUILD_GO8) {
-		// This accepts a path to a vertex.
+		/// If they build a GO8, first we find what vertex ID they are
+		/// referring to, then we change it to that player's GO8.
+		short ID = getCampusID(g, a.destination);
+		if (g->whoseTurn == UNI_A) {
+			g->campus[ID].type = GO8_A;
+		} else if (g->whoseTurn == UNI_B) {
+			g->campus[ID].type = GO8_B;
+		} else if (g->whoseTurn == UNI_C) {
+			g->campus[ID].type = GO8_C;
+		}
 	} else if (a.actionCode == OBTAIN_ARC) {
-		// This accepts a path to an edge.
+		/// If they build an ARC, first we find what vertex ID they are
+		/// referring to, then we change it to that player's ARC.
+		short ID = getARCID(g, a.destination);
+		if (g->whoseTurn == UNI_A) {
+			g->ARC[ID].type = ARC_A;
+		} else if (g->whoseTurn == UNI_B) {
+			g->ARC[ID].type = ARC_B;
+		} else if (g->whoseTurn == UNI_C) {
+			g->ARC[ID].type = ARC_C;
+		}
 	} else if (a.actionCode == START_SPINOFF) {
 		// This doesn't have any other inputs.
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
@@ -356,10 +385,7 @@ int getCampus(Game g, path pathToVertex) {
 	int whatCampus = VACANT_ARC;
 
 	/// We firstly convert the path to a co-ordinate.
-	Coord start = convertPath(pathToVertex);
-
-	/// Then we find which campus relates to that.
-	short ID = findCampus(g, start);
+	short ID = getCampusID(g, pathToVertex);
 
 	/// If we found a vertex, we return
 	if (ID != NOT_FOUND) {
@@ -372,27 +398,9 @@ int getCampus(Game g, path pathToVertex) {
 /// This asks for a path to an edge, and returns what is on it.
 int getARC(Game g, path pathToEdge) {
 	int whatARC = VACANT_ARC;
-	short pathsize = 0;
-
-	/// The end of the edge relates to the whole path.
-	Coord end = convertPath(pathToEdge);
-
-	/// To find the start, we truncate the last term of the path.
-	while ((pathToEdge[pathsize] == 'R') ||
-	       (pathToEdge[pathsize] == 'L') ||
-           (pathToEdge[pathsize] == 'B')) {
-		pathsize++;
-	}
-	pathsize--;
-	/// And we replace it with a dummy character.
-	pathToEdge[pathsize] = 0;
-
-	/// That way, the path stops at the beginning.
-	Coord start = convertPath(pathToEdge);
-
-	/// Then, we find which edge is being referred to.
-	short ID = findARC(g, start, end);
-
+	
+	short ID = getARCID(g, pathToEdge);
+	
 	/// And then get what type is on it.
 	if (ID != NOT_FOUND) {
 		whatARC = g->ARC[ID].type;
@@ -603,15 +611,14 @@ int getStudents (Game g, int player, int discipline) {
 /// many of one type of resource is used to convert to another type.
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	int exchangeRate = 3;
-	// I think this is 3 for everything. We could add a weird formula
-	// or something, but for now it'll just be 3. This doesn't use any
-	// data yet.
+	
+	
+
 	return exchangeRate;
 }
 
 /// This function converts a path from the starting vertex into a
 /// triangle co-ordinate. Refer to the diagram to check these values.
-// INCOMPLETE
 Coord convertPath(path path) {
 	Coord coord;
 	/// These are the starting co-ords from the beginning of a path.
@@ -703,6 +710,39 @@ Coord convertPath(path path) {
 	}
 
 	return coord;
+}
+
+short getCampusID(Game g, path path) {
+	/// We convert the path to a coord.
+	Coord start = convertPath(path);
+	/// And then we get its ID.
+	short ID = findCampus(g, start);
+	
+	return ID;
+}
+
+short getARCID(Game g, path path) {
+	short pathsize = 0;
+	/// It's easy to find the end of the ARC.
+	Coord end = convertPath(path);
+
+	/// To find the start, we truncate the last term of the path.
+	while ((path[pathsize] == 'R') ||
+	       (path[pathsize] == 'L') ||
+           (path[pathsize] == 'B')) {
+		pathsize++;
+	}
+	pathsize--;
+	/// And we replace it with a dummy character.
+	path[pathsize] = 0;
+
+	/// That way, the path stops at the beginning.
+	Coord start = convertPath(path);
+
+	/// Then, we find which edge is being referred to.
+	short ID = findARC(g, start, end);
+	
+	return ID;
 }
 
 /// This function compares a coordinate with the campuses stored in
