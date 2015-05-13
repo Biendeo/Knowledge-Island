@@ -41,8 +41,6 @@ typedef struct _coordinate {
 typedef struct _player {
 	/// This stores the ID of the player.
 	int playerID;
-	///Should we store this or use a formula to calculate this from the other info?
-	int KPIs;
 
 	/// This counts how many of each building they have. This will
 	/// allow us to easily calculate their score, and use other
@@ -171,9 +169,9 @@ Game newGame (int discipline[], int dice[]) {
 	initialiseEdges(g);
 
 	/// Now the player data.
-	// Some of this we can set right away.
+	// When we add the two ARCs and campuses per player, we should set
+	// them here.
 	g->p1.playerID = UNI_A;
-	g->p1.KPIs = 0;
 	g->p1.ARCs = 0;
 	g->p1.campuses = 0;
 	g->p1.GO8s = 0;
@@ -186,7 +184,6 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MTVs = 0;
 	g->p1.MMONEYs = 0;
 	g->p2.playerID = UNI_A;
-	g->p2.KPIs = 0;
 	g->p2.ARCs = 0;
 	g->p2.campuses = 0;
 	g->p2.GO8s = 0;
@@ -199,7 +196,6 @@ Game newGame (int discipline[], int dice[]) {
 	g->p2.MTVs = 0;
 	g->p2.MMONEYs = 0;
 	g->p3.playerID = UNI_C;
-	g->p3.KPIs = 0;
 	g->p3.ARCs = 0;
 	g->p3.campuses = 0;
 	g->p3.GO8s = 0;
@@ -231,10 +227,22 @@ void makeAction (Game g, action a) {
 		short ID = getCampusID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
 			g->campus[ID].type = CAMPUS_A;
+			g->p1.BPSs--;
+			g->p1.BQNs--;
+			g->p1.MJs--;
+			g->p1.MTVs--;
 		} else if (g->whoseTurn == UNI_B) {
 			g->campus[ID].type = CAMPUS_B;
+			g->p2.BPSs--;
+			g->p2.BQNs--;
+			g->p2.MJs--;
+			g->p2.MTVs--;
 		} else if (g->whoseTurn == UNI_C) {
 			g->campus[ID].type = CAMPUS_C;
+			g->p3.BPSs--;
+			g->p3.BQNs--;
+			g->p3.MJs--;
+			g->p3.MTVs--;
 		}
 	} else if (a.actionCode == BUILD_GO8) {
 		/// If they build a GO8, first we find what vertex ID they are
@@ -242,10 +250,16 @@ void makeAction (Game g, action a) {
 		short ID = getCampusID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
 			g->campus[ID].type = GO8_A;
+			g->p1.MJs -= 2;
+			g->p1.MMONEYs -= 3;
 		} else if (g->whoseTurn == UNI_B) {
 			g->campus[ID].type = GO8_B;
+			g->p2.MJs -= 2;
+			g->p2.MMONEYs -= 3;
 		} else if (g->whoseTurn == UNI_C) {
 			g->campus[ID].type = GO8_C;
+			g->p3.MJs -= 2;
+			g->p3.MMONEYs -= 3;
 		}
 	} else if (a.actionCode == OBTAIN_ARC) {
 		/// If they build an ARC, first we find what vertex ID they are
@@ -253,19 +267,145 @@ void makeAction (Game g, action a) {
 		short ID = getARCID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
 			g->ARC[ID].type = ARC_A;
+			g->p1.BPSs--;
+			g->p1.BQNs--;
 		} else if (g->whoseTurn == UNI_B) {
 			g->ARC[ID].type = ARC_B;
+			g->p2.BPSs--;
+			g->p2.BQNs--;
 		} else if (g->whoseTurn == UNI_C) {
 			g->ARC[ID].type = ARC_C;
+			g->p3.BPSs--;
+			g->p3.BQNs--;
 		}
 	} else if (a.actionCode == START_SPINOFF) {
-		// This doesn't have any other inputs.
+		if (g->whoseTurn == UNI_A) {
+			g->p1.MJs--;
+			g->p1.MTVs--;
+			g->p1.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p1.patents++;
+			} else {
+				g->p1.papers++;
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			g->p2.MJs--;
+			g->p2.MTVs--;
+			g->p2.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p2.patents++;
+			} else {
+				g->p2.papers++;
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			g->p3.MJs--;
+			g->p3.MTVs--;
+			g->p3.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p3.patents++;
+			} else {
+				g->p3.papers++;
+			}
+		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		// I dunno about this.
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
 		// I dunno about this either.
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
-		// This accepts two discipline types.
+		if (g->whoseTurn == UNI_A) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				g->p1.BPSs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				g->p1.BQNs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				g->p1.MJs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				g->p1.MTVs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				g->p1.MMONEYs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			}
+			
+			if (a.disciplineTo == STUDENT_THD) {
+				g->p1.THDs++;
+			} else if (a.disciplineTo == STUDENT_BPS) {
+				g->p1.BPSs++;
+			} else if (a.disciplineTo == STUDENT_BQN) {
+				g->p1.BQNs++;
+			} else if (a.disciplineTo == STUDENT_MJ) {
+				g->p1.MJs++;
+			} else if (a.disciplineTo == STUDENT_MTV) {
+				g->p1.MTVs++;
+			} else if (a.disciplineTo == STUDENT_MMONEY) {
+				g->p1.MMONEYs++;
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				g->p2.BPSs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				g->p2.BQNs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				g->p2.MJs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				g->p2.MTVs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				g->p2.MMONEYs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			}
+			
+			if (a.disciplineTo == STUDENT_THD) {
+				g->p2.THDs++;
+			} else if (a.disciplineTo == STUDENT_BPS) {
+				g->p2.BPSs++;
+			} else if (a.disciplineTo == STUDENT_BQN) {
+				g->p2.BQNs++;
+			} else if (a.disciplineTo == STUDENT_MJ) {
+				g->p2.MJs++;
+			} else if (a.disciplineTo == STUDENT_MTV) {
+				g->p2.MTVs++;
+			} else if (a.disciplineTo == STUDENT_MMONEY) {
+				g->p2.MMONEYs++;
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				g->p3.BPSs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				g->p3.BQNs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				g->p3.MJs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				g->p3.MTVs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				g->p3.MMONEYs -= getExchangeRate(g, g->whoseTurn,
+				                      a.disciplineFrom, a.disciplineTo);
+			}
+			
+			if (a.disciplineTo == STUDENT_THD) {
+				g->p3.THDs++;
+			} else if (a.disciplineTo == STUDENT_BPS) {
+				g->p3.BPSs++;
+			} else if (a.disciplineTo == STUDENT_BQN) {
+				g->p3.BQNs++;
+			} else if (a.disciplineTo == STUDENT_MJ) {
+				g->p3.MJs++;
+			} else if (a.disciplineTo == STUDENT_MTV) {
+				g->p3.MTVs++;
+			} else if (a.disciplineTo == STUDENT_MMONEY) {
+				g->p3.MMONEYs++;
+			}
+		}
 	}
 }
 
@@ -439,16 +579,45 @@ int getARC(Game g, path pathToEdge) {
 // INCOMPLETE
 int isLegalAction (Game g, action a) {
 	int isLegalAction = FALSE;
-	// In here will be a bunch of checks for the action.
-	// We need to fill out ALL of these.
+	// THE CURRENT ONES DO NOT CHECK RESOURCES YET. CHECK THAT TOO!
 	if (a.actionCode == PASS) {
 		isLegalAction = TRUE;
 	} else if (a.actionCode == BUILD_CAMPUS) {
-		// This accepts a path to a vertex.
+		short ID = getCampusID(g, a.destination);
+		if ((g->campus[ID].type == VACANT_VERTEX) &&
+		                                            (ID != NOT_FOUND)) {
+			isLegalAction = TRUE;
+		}
 	} else if (a.actionCode == BUILD_GO8) {
-		// This accepts a path to a vertex.
+		short ID = getCampusID(g, a.destination);
+		if (g->whoseTurn == UNI_A) {
+			if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_B) {
+			if ((g->campus[ID].type == CAMPUS_B) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_C) {
+			if ((g->campus[ID].type == CAMPUS_C) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		}
 	} else if (a.actionCode == OBTAIN_ARC) {
-		// This accepts a path to an edge.
+		short ID = getARCID(g, a.destination);
+		if (g->whoseTurn == UNI_A) {
+			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_B) {
+			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_C) {
+			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+				isLegalAction = TRUE;
+			}
+		}
 	} else if (a.actionCode == START_SPINOFF) {
 		// This doesn't have any other inputs.
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
@@ -469,12 +638,36 @@ int getKPIpoints (Game g, int player) {
 	// be expanded.
 	int howManyKPIs = 0;
 
-	if (player == ARC_A) {
-		howManyKPIs = g->p1.KPIs;
-	} else if (player == ARC_B) {
-		howManyKPIs = g->p2.KPIs;
-	} else if (player == ARC_C) {
-		howManyKPIs = g->p3.KPIs;
+	if (player == UNI_A) {
+		howManyKPIs += (g->p1.ARCs * 2);
+		howManyKPIs += (g->p1.campuses * 10);
+		howManyKPIs += (g->p1.GO8s * 20);
+		if (getMostARCs(g) == UNI_A) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_A) {
+			howManyKPIs += 10;
+		}
+	} else if (player == UNI_B) {
+		howManyKPIs += (g->p2.ARCs * 2);
+		howManyKPIs += (g->p2.campuses * 10);
+		howManyKPIs += (g->p2.GO8s * 20);
+		if (getMostARCs(g) == UNI_B) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_B) {
+			howManyKPIs += 10;
+		}
+	} else if (player == UNI_C) {
+		howManyKPIs += (g->p3.ARCs * 2);
+		howManyKPIs += (g->p3.campuses * 10);
+		howManyKPIs += (g->p3.GO8s * 20);
+		if (getMostARCs(g) == UNI_C) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_C) {
+			howManyKPIs += 10;
+		}
 	}
 
 	return howManyKPIs;
@@ -542,7 +735,7 @@ int getIPs (Game g, int player) {
 
 /// This asks for a player, and returns how many publications they have.
 int getPublications (Game g, int player) {
-		int howManyPapers = 0;
+	int howManyPapers = 0;
 
 	if (player == ARC_A) {
 		howManyPapers = g->p1.papers;
