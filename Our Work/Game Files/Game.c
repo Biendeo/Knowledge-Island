@@ -574,7 +574,7 @@ int isLegalAction (Game g, action a) {
 		isLegalAction = TRUE;
 	} else if (a.actionCode == BUILD_CAMPUS) {
 		short ID = getCampusID(g, a.destination);
-		if ((g->campus[ID].type == VACANCT_VERTEX) &&
+		if ((g->campus[ID].type == VACANT_VERTEX) &&
 		                                            (ID != NOT_FOUND)) {
 			isLegalAction = TRUE;
 		}
@@ -628,12 +628,36 @@ int getKPIpoints (Game g, int player) {
 	// be expanded.
 	int howManyKPIs = 0;
 
-	if (player == ARC_A) {
-		howManyKPIs = g->p1.KPIs;
-	} else if (player == ARC_B) {
-		howManyKPIs = g->p2.KPIs;
-	} else if (player == ARC_C) {
-		howManyKPIs = g->p3.KPIs;
+	if (player == UNI_A) {
+		howManyKPIs += (g->p1.ARCs * 2);
+		howManyKPIs += (g->p1.campuses * 10);
+		howManyKPIs += (g->p1.GO8s * 20);
+		if (getMostARCs(g) == UNI_A) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_A) {
+			howManyKPIs += 10;
+		}
+	} else if (player == UNI_B) {
+		howManyKPIs += (g->p2.ARCs * 2);
+		howManyKPIs += (g->p2.campuses * 10);
+		howManyKPIs += (g->p2.GO8s * 20);
+		if (getMostARCs(g) == UNI_B) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_B) {
+			howManyKPIs += 10;
+		}
+	} else if (player == UNI_C) {
+		howManyKPIs += (g->p3.ARCs * 2);
+		howManyKPIs += (g->p3.campuses * 10);
+		howManyKPIs += (g->p3.GO8s * 20);
+		if (getMostARCs(g) == UNI_C) {
+			howManyKPIs += 10;
+		}
+		if (getMostPublications(g) == UNI_C) {
+			howManyKPIs += 10;
+		}
 	}
 
 	return howManyKPIs;
