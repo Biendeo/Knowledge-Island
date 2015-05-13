@@ -8,12 +8,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h> /// For the random dice roll function.
-
 #include "Game.h"
 
-#define TRUE !FALSE
-#define FALSE 0
 #define POINTS_TO_WIN 150
+
+#define LEFT 'L'
+#define RIGHT 'R'
+#define BACK 'B'
+
+#define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
+                STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
+                STUDENT_MJ, STUDENT_BQN, STUDENT_THD, STUDENT_MJ, \
+                STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS }
+#define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
 
 int playTurn(Game g);
 int checkWin(Game g);
@@ -64,10 +72,8 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
-			int diceScore;
-			diceScore = makeDiceValue();
-			throwDice(g, diceScore);
-			
+			gDiceScore = makeDiceValue();
+			throwDice(g, gDiceScore);
 			playTurn(g);
 		}
 		gHasWon = checkWin(g);
@@ -86,21 +92,59 @@ int playTurn(Game g) {
 	/// The action is created. The action is given a value so that it
 	/// doesn't accidentally skip the user's turn.
 	action a;
-	action.actionCode = 8;
+	short pathpos = 0;
+	char bufferChar = 0;
 	
-	while (action.actionCode != PASS) {
-		// Here, the user needs to input an action.
-		scanf("%d", &action.actionCode); // scans user input
+	while (a.actionCode != PASS) {
+		/// These reset the action for every turn.
+		a.actionCode = -1;
+		pathpos = 0;
+		while (pathpos < PATH_LIMIT) {
+			a.destination[pathpos] = 0;
+			pathpos++;
+		}
+		pathpos = 0;
+		a.disciplineFrom = -1;
+		a.disciplineTo = -1;
+		
+		pathpos = 0;
+		printf("Input an action code: ");
+		scanf("%d", &a.actionCode);
+		
+		if ((a.actionCode == BUILD_CAMPUS) ||
+		    (a.actionCode == BUILD_GO8) || 
+		    (a.actionCode == OBTAIN_ARC)) {
+			printf("Type a path using L, R, and B.\n");
+			getchar();
+			bufferChar = LEFT;
+			
+			while ((bufferChar == LEFT) ||
+			       (bufferChar == RIGHT) ||
+			       (bufferChar == BACK)) {
+				bufferChar = getchar();
+				a.destination[pathpos] = bufferChar;
+				pathpos++;
+			}
+		}
+		
+		// What is OBTAIN_PUBICATION and OBTAIN_IP_PATENT?
+		
+		if (a.actionCode == RETRAIN_STUDENTS) {
+			printf("What students are you converting from? ");
+			scanf("%d", &a.disciplineFrom);
+			printf("And to? ");
+			scanf("%d", &a.disciplineTo);
+		}
+		
+		/// Firstly, a blanket check to see if what they're doing is
+		/// valid, then perform the action.
 		if (isLegalAction(g, a) == TRUE) {
-			makeAction(g, a);	
+			makeAction(g, a);
+		} else {
+			printf("That action was not legal.\n");
 		}
-		//checks if player wins game after their action
-		if (checkWin(g) != FALSE) {
-			action.actionCode = PASS; 
 		}
-	}
-	
-	return EXIT_SUCCESS;
+	}	return EXIT_SUCCESS;
 }
 
 /// This function just checks if any of the players has won the game
@@ -133,7 +177,7 @@ void printWinner(Game g, int hasWon) {
 
 int makeDiceValue(void) {
 	int permutation[36] = {2,3,3,4,4,4,5,5,5,5,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,10,10,10,11,11,12};
-        int pos = rand()%36;
-        int diceValue = permutation[pos];
+	int pos = rand() % 36;
+	int diceValue = permutation[pos];
 	return diceValue;
 }
