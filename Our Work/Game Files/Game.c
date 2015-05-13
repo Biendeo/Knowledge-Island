@@ -131,7 +131,6 @@ Game newGame (int discipline[], int dice[]) {
 	Game g = malloc(sizeof(Game));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
-	short pathpos = 0;
 
 	g->turnNumber = -1;
 	g->whoseTurn = 0;
@@ -222,25 +221,22 @@ void disposeGame (Game g) {
 /// directy to this step on his turn.
 // INCOMPLETE
 void makeAction (Game g, action a) {
-	/// Firstly, a blanket check to see if what they're doing is valid.
-	if (isLegalAction(g, a) == TRUE) {
-		if (a.actionCode == PASS) {
-			/// We don't do anything.
-		} else if (a.actionCode == BUILD_CAMPUS) {
-			// This accepts a path to a vertex.
-		} else if (a.actionCode == BUILD_GO8) {
-			// This accepts a path to a vertex.
-		} else if (a.actionCode == OBTAIN_ARC) {
-			// This accepts a path to an edge.
-		} else if (a.actionCode == START_SPINOFF) {
-			// This doesn't have any other inputs.
-		} else if (a.actionCode == OBTAIN_PUBLICATION) {
-			// I dunno about this.
-		} else if (a.actionCode == OBTAIN_IP_PATENT) {
-			// I dunno about this either.
-		} else if (a.actionCode == RETRAIN_STUDENTS) {
-			// This accepts two discipline types.
-		}
+	if (a.actionCode == PASS) {
+		/// We don't do anything.
+	} else if (a.actionCode == BUILD_CAMPUS) {
+		// This accepts a path to a vertex.
+	} else if (a.actionCode == BUILD_GO8) {
+		// This accepts a path to a vertex.
+	} else if (a.actionCode == OBTAIN_ARC) {
+		// This accepts a path to an edge.
+	} else if (a.actionCode == START_SPINOFF) {
+		// This doesn't have any other inputs.
+	} else if (a.actionCode == OBTAIN_PUBLICATION) {
+		// I dunno about this.
+	} else if (a.actionCode == OBTAIN_IP_PATENT) {
+		// I dunno about this either.
+	} else if (a.actionCode == RETRAIN_STUDENTS) {
+		// This accepts two discipline types.
 	}
 }
 
@@ -879,7 +875,7 @@ void initialiseVertices(Game g) {
 	g->campus[51].start.y = 0;
 }
 
-void intialiseEdges(Game g) {
+void initialiseEdges(Game g) {
 	/// These are arranged by rows.
 	/// Firstly, horizontal edges.
 	g->ARC[ 0].start.x = 7;

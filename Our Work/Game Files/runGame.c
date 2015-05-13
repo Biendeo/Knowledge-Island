@@ -12,6 +12,10 @@
 
 #define POINTS_TO_WIN 150
 
+#define LEFT 'L'
+#define RIGHT 'R'
+#define BACK 'B'
+
 #define DEFAULT_DISCIPLINES {STUDENT_BQN, STUDENT_MMONEY, STUDENT_MJ, \
                 STUDENT_MMONEY, STUDENT_MJ, STUDENT_BPS, STUDENT_MTV, \
                 STUDENT_MTV, STUDENT_BPS,STUDENT_MTV, STUDENT_BQN, \
@@ -68,9 +72,8 @@ int main(int argc, char *argv[]) {
 	/// single game that has finished.
 	while (gHasWon == FALSE) {
 		if (gHasWon == FALSE) {
-			int diceScore;
-			diceScore = makeDiceValue();
-			throwDice(g, diceScore);
+			gDiceScore = makeDiceValue();
+			throwDice(g, gDiceScore);
 			playTurn(g);
 		}
 		gHasWon = checkWin(g);
@@ -89,51 +92,58 @@ int playTurn(Game g) {
 	/// The action is created. The action is given a value so that it
 	/// doesn't accidentally skip the user's turn.
 	action a;
-	a.actionCode = 8;
+	short pathpos = 0;
+	char bufferChar = 0;
 	
 	while (a.actionCode != PASS) {
-      /// building arc branch
-      /// can cts build if you have the resources
-      
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && ((getStudents(g, 1, STUDENT_BQN) >= 1))) {
-         // Need to know: How to refer to the vertex
-         // if = vertex existed
-         if (/*vertex exist*/)  {
-            a.actionCode == OBTAIN_ARC;
-            getStudents(g, 1, STUDENT_BPS) -= 1;
-            getStudents(g, 1, STUDENT_BQN) -= 1;
-         }
-      } 
-      while ((getStudents(g, 1, STUDENT_BPS) >= 1) && (getStudents(g, 1, STUDENT_BQN) >= 1) &&
-              (getStudents(g, 1, STUDENT_MJ) >= 1) && (getStudents(g, 1, STUDENT_MTV) >= 1)) {
-         if (/*vertex exist*/) {
-            a.actionCode == BUILD_CAMPUS;
-            getStudents(g, 1, STUDENT_BPS) -= 1;
-            getStudents(g, 1, STUDENT_BQN) -= 1;
-            getStudents(g, 1, STUDENT_MJ) -= 1;
-            getStudents(g, 1, STUDENT_MTV) -= 1;
-         }
-      }
-      while ((getStudents(g, 1, STUDENT_MJ) >= 2) && (getStudents(g, 1, STUDENT_MTV >= 3) && (int getCampus(Game g, path pathToVertex >= 1)) {
-            //Not sure about path to vertex >=1
-         if (/*vertex exist*/) {
-            a.actionCode == BUILD_G08;
-            getStudents(g, 1, STUDENT_MJ) -= 2;
-            getStudents(g, 1, STUDENT_MTV) -= 3;
-            //how to call a building?
-         }
-		// Here, the user needs to input an a.
-		scanf("%d", &a.actionCode); // scans user input
+		/// These reset the action for every turn.
+		a.actionCode = -1;
+		pathpos = 0;
+		while (pathpos < PATH_LIMIT) {
+			a.destination[pathpos] = 0;
+			pathpos++;
+		}
+		pathpos = 0;
+		a.disciplineFrom = -1;
+		a.disciplineTo = -1;
+		
+		pathpos = 0;
+		printf("Input an action code: ");
+		scanf("%d", &a.actionCode);
+		
+		if ((a.actionCode == BUILD_CAMPUS) ||
+		    (a.actionCode == BUILD_GO8) || 
+		    (a.actionCode == OBTAIN_ARC)) {
+			printf("Type a path using L, R, and B.\n");
+			getchar();
+			bufferChar = LEFT;
+			
+			while ((bufferChar == LEFT) ||
+			       (bufferChar == RIGHT) ||
+			       (bufferChar == BACK)) {
+				bufferChar = getchar();
+				a.destination[pathpos] = bufferChar;
+				pathpos++;
+			}
+		}
+		
+		// What is OBTAIN_PUBICATION and OBTAIN_IP_PATENT?
+		
+		if (a.actionCode == RETRAIN_STUDENTS) {
+			printf("What students are you converting from? ");
+			scanf("%d", &a.disciplineFrom);
+			printf("And to? ");
+			scanf("%d", &a.disciplineTo);
+		}
+		
+		/// Firstly, a blanket check to see if what they're doing is
+		/// valid, then perform the action.
 		if (isLegalAction(g, a) == TRUE) {
-			makeAction(g, a);	
+			makeAction(g, a);
+		} else {
+			printf("That action was not legal.\n");
 		}
-		//checks if player wins game after their action
-		if (checkWin(g) != FALSE) {
-			a.actionCode = PASS; 
-		}
-	  }
 	}
-	
 	return EXIT_SUCCESS;
 }
 
