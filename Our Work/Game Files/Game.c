@@ -169,9 +169,9 @@ Game newGame (int discipline[], int dice[]) {
 	initialiseEdges(g);
 
 	/// Now the player data.
-	// Some of this we can set right away.
+	// When we add the two ARCs and campuses per player, we should set
+	// them here.
 	g->p1.playerID = UNI_A;
-	g->p1.KPIs = 0;
 	g->p1.ARCs = 0;
 	g->p1.campuses = 0;
 	g->p1.GO8s = 0;
@@ -184,7 +184,6 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MTVs = 0;
 	g->p1.MMONEYs = 0;
 	g->p2.playerID = UNI_A;
-	g->p2.KPIs = 0;
 	g->p2.ARCs = 0;
 	g->p2.campuses = 0;
 	g->p2.GO8s = 0;
@@ -197,7 +196,6 @@ Game newGame (int discipline[], int dice[]) {
 	g->p2.MTVs = 0;
 	g->p2.MMONEYs = 0;
 	g->p3.playerID = UNI_C;
-	g->p3.KPIs = 0;
 	g->p3.ARCs = 0;
 	g->p3.campuses = 0;
 	g->p3.GO8s = 0;
@@ -253,15 +251,15 @@ void makeAction (Game g, action a) {
 		if (g->whoseTurn == UNI_A) {
 			g->campus[ID].type = GO8_A;
 			g->p1.MJs -= 2;
-			g->p1.MMONEYS -= 3;
+			g->p1.MMONEYs -= 3;
 		} else if (g->whoseTurn == UNI_B) {
 			g->campus[ID].type = GO8_B;
 			g->p2.MJs -= 2;
-			g->p2.MMONEYS -= 3;
+			g->p2.MMONEYs -= 3;
 		} else if (g->whoseTurn == UNI_C) {
 			g->campus[ID].type = GO8_C;
 			g->p3.MJs -= 2;
-			g->p3.MMONEYS -= 3;
+			g->p3.MMONEYs -= 3;
 		}
 	} else if (a.actionCode == OBTAIN_ARC) {
 		/// If they build an ARC, first we find what vertex ID they are
@@ -282,20 +280,32 @@ void makeAction (Game g, action a) {
 		}
 	} else if (a.actionCode == START_SPINOFF) {
 		if (g->whoseTurn == UNI_A) {
-			g->ARC[ID].type = ARC_A;
 			g->p1.MJs--;
 			g->p1.MTVs--;
 			g->p1.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p1.patents++;
+			} else {
+				g->p1.papers++;
+			}
 		} else if (g->whoseTurn == UNI_B) {
-			g->ARC[ID].type = ARC_B;
 			g->p2.MJs--;
 			g->p2.MTVs--;
 			g->p2.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p2.patents++;
+			} else {
+				g->p2.papers++;
+			}
 		} else if (g->whoseTurn == UNI_C) {
-			g->ARC[ID].type = ARC_C;
 			g->p3.MJs--;
 			g->p3.MTVs--;
 			g->p3.MMONEYs--;
+			if ((rand() % 3) == 0) {
+				g->p3.patents++;
+			} else {
+				g->p3.papers++;
+			}
 		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		// I dunno about this.
@@ -725,7 +735,7 @@ int getIPs (Game g, int player) {
 
 /// This asks for a player, and returns how many publications they have.
 int getPublications (Game g, int player) {
-		int howManyPapers = 0;
+	int howManyPapers = 0;
 
 	if (player == ARC_A) {
 		howManyPapers = g->p1.papers;
