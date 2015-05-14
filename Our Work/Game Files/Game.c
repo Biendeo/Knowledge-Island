@@ -168,46 +168,55 @@ Game newGame (int discipline[], int dice[]) {
 	/// from the top-left, and go row-by-row.
 	initialiseVertices(g);
 	initialiseEdges(g);
+	
+	/// There's also the initial two ARCs and campus per player.
+	g->ARC[24].type = ARC_A;
+	g->ARC[47].type = ARC_A;
+	g->ARC[54].type = ARC_B;
+	g->ARC[65].type = ARC_B;
+	g->ARC[ 5].type = ARC_C;
+	g->ARC[18].type = ARC_C;
+	g->campus[18].type = CAMPUS_A;
+	g->campus[ 5].type = CAMPUS_B;
+	g->campus[18].type = CAMPUS_C;
 
 	/// Now the player data.
-	// When we add the two ARCs and campuses per player, we should set
-	// them here.
 	g->p1.playerID = UNI_A;
-	g->p1.ARCs = 0;
-	g->p1.campuses = 0;
+	g->p1.ARCs = 2;
+	g->p1.campuses = 1;
 	g->p1.GO8s = 0;
 	g->p1.patents = 0;
 	g->p1.papers = 0;
 	g->p1.THDs = 0;
-	g->p1.BPSs = 0;
-	g->p1.BQNs = 0;
-	g->p1.MJs = 0;
-	g->p1.MTVs = 0;
-	g->p1.MMONEYs = 0;
+	g->p1.BPSs = 3;
+	g->p1.BQNs = 3;
+	g->p1.MJs = 1;
+	g->p1.MTVs = 1;
+	g->p1.MMONEYs = 1;
 	g->p2.playerID = UNI_A;
-	g->p2.ARCs = 0;
-	g->p2.campuses = 0;
+	g->p2.ARCs = 2;
+	g->p2.campuses = 1;
 	g->p2.GO8s = 0;
 	g->p2.patents = 0;
 	g->p2.papers = 0;
 	g->p2.THDs = 0;
-	g->p2.BPSs = 0;
-	g->p2.BQNs = 0;
-	g->p2.MJs = 0;
-	g->p2.MTVs = 0;
-	g->p2.MMONEYs = 0;
+	g->p2.BPSs = 3;
+	g->p2.BQNs = 3;
+	g->p2.MJs = 1;
+	g->p2.MTVs = 1;
+	g->p2.MMONEYs = 1;
 	g->p3.playerID = UNI_C;
-	g->p3.ARCs = 0;
-	g->p3.campuses = 0;
+	g->p3.ARCs = 2;
+	g->p3.campuses = 1;
 	g->p3.GO8s = 0;
 	g->p3.patents = 0;
 	g->p3.papers = 0;
 	g->p3.THDs = 0;
-	g->p3.BPSs = 0;
-	g->p3.BQNs = 0;
-	g->p3.MJs = 0;
-	g->p3.MTVs = 0;
-	g->p3.MMONEYs = 0;
+	g->p3.BPSs = 3;
+	g->p3.BQNs = 3;
+	g->p3.MJs = 1;
+	g->p3.MTVs = 1;
+	g->p3.MMONEYs = 1;
 	return g;
 }
 
@@ -648,8 +657,6 @@ int isLegalAction (Game g, action a) {
 
 /// This asks for a player, and returns how many KPI points they have.
 int getKPIpoints (Game g, int player) {
-	// If this is calculated rather than stored, then it will need to
-	// be expanded.
 	int howManyKPIs = 0;
 
 	if (player == UNI_A) {
