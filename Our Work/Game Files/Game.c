@@ -819,7 +819,127 @@ int getStudents (Game g, int player, int discipline) {
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	int exchangeRate = 3;
 	
-	
+	/// Players should not be able to exchange THDs, so this is a high
+	/// value. Otherwise, the rate is 3 by default, unless that player
+	/// has a GO8 or a campus on one of two places for each discipline.
+	if (disciplineFrom == STUDENT_THD) {
+		exchangeRate = 9000;
+	} else if (disciplineFrom == STUDENT_BPS) {
+		if (player == UNI_A) {
+			if ((g->campus[43].type == CAMPUS_A) ||
+			    (g->campus[48].type == CAMPUS_A) ||
+				(g->campus[43].type == GO8_A) ||
+				(g->campus[48].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[43].type == CAMPUS_B) ||
+			    (g->campus[48].type == CAMPUS_B) ||
+				(g->campus[43].type == GO8_B) ||
+				(g->campus[48].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[43].type == CAMPUS_C) ||
+			    (g->campus[48].type == CAMPUS_C) ||
+				(g->campus[43].type == GO8_C) ||
+				(g->campus[48].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_BQN) {
+		if (player == UNI_A) {
+			if ((g->campus[29].type == CAMPUS_A) ||
+			    (g->campus[35].type == CAMPUS_A) ||
+				(g->campus[29].type == GO8_A) ||
+				(g->campus[35].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[29].type == CAMPUS_B) ||
+			    (g->campus[35].type == CAMPUS_B) ||
+				(g->campus[29].type == GO8_B) ||
+				(g->campus[35].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[29].type == CAMPUS_C) ||
+			    (g->campus[35].type == CAMPUS_C) ||
+				(g->campus[29].type == GO8_C) ||
+				(g->campus[35].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MJ) {
+		if (player == UNI_A) {
+			if ((g->campus[46].type == CAMPUS_A) ||
+			    (g->campus[51].type == CAMPUS_A) ||
+				(g->campus[46].type == GO8_A) ||
+				(g->campus[51].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[46].type == CAMPUS_B) ||
+			    (g->campus[51].type == CAMPUS_B) ||
+				(g->campus[46].type == GO8_B) ||
+				(g->campus[51].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[46].type == CAMPUS_C) ||
+			    (g->campus[51].type == CAMPUS_C) ||
+				(g->campus[46].type == GO8_C) ||
+				(g->campus[51].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MTV) {
+		if (player == UNI_A) {
+			if ((g->campus[2].type == CAMPUS_A) ||
+			    (g->campus[3].type == CAMPUS_A) ||
+				(g->campus[2].type == GO8_A) ||
+				(g->campus[3].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[2].type == CAMPUS_B) ||
+			    (g->campus[3].type == CAMPUS_B) ||
+				(g->campus[2].type == GO8_B) ||
+				(g->campus[3].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[2].type == CAMPUS_C) ||
+			    (g->campus[3].type == CAMPUS_C) ||
+				(g->campus[2].type == GO8_C) ||
+				(g->campus[3].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MMONEY) {
+		if (player == UNI_A) {
+			if ((g->campus[4].type == CAMPUS_A) ||
+			    (g->campus[5].type == CAMPUS_A) ||
+				(g->campus[4].type == GO8_A) ||
+				(g->campus[5].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[4].type == CAMPUS_B) ||
+			    (g->campus[5].type == CAMPUS_B) ||
+				(g->campus[4].type == GO8_B) ||
+				(g->campus[5].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[4].type == CAMPUS_C) ||
+			    (g->campus[5].type == CAMPUS_C) ||
+				(g->campus[4].type == GO8_C) ||
+				(g->campus[5].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	}
 
 	return exchangeRate;
 }
