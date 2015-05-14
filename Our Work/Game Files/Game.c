@@ -133,7 +133,7 @@ void initialiseEdges(Game g);
 /// There's a "#defined" array, that is then stored in an actual array,
 /// which then is used to start the game creation function.
 
-/// When the game initalises, you store these numbers into variables,
+/// When the game initialises, you store these numbers into variables,
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
@@ -177,16 +177,19 @@ Game newGame (int discipline[], int dice[]) {
 	initialiseVertices(g);
 	initialiseEdges(g);
 	
-	/// There's also the initial two ARCs and campus per player.
+	/// There's also the initial two ARCs and campuses per player.
 	g->ARC[24].type = ARC_A;
 	g->ARC[47].type = ARC_A;
 	g->ARC[54].type = ARC_B;
 	g->ARC[65].type = ARC_B;
 	g->ARC[ 5].type = ARC_C;
 	g->ARC[18].type = ARC_C;
-	g->campus[18].type = CAMPUS_A;
-	g->campus[ 5].type = CAMPUS_B;
-	g->campus[18].type = CAMPUS_C;
+	g->campus[ 0].type = CAMPUS_A;
+	g->campus[53].type = CAMPUS_A;
+	g->campus[12].type = CAMPUS_B;
+	g->campus[41].type = CAMPUS_B;
+	g->campus[11].type = CAMPUS_C;
+	g->campus[42].type = CAMPUS_C;
 
 	/// Now the player data.
 	g->p1.playerID = UNI_A;
