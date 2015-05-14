@@ -238,7 +238,6 @@ void disposeGame (Game g) {
 
 /// This does an action the user inputs. I guess the AI will jump
 /// directy to this step on his turn.
-// INCOMPLETE
 void makeAction (Game g, action a) {
 	if (a.actionCode == PASS) {
 		/// We don't do anything.
@@ -432,7 +431,6 @@ void makeAction (Game g, action a) {
 
 /// This advances the game to the next turn. It increases the turn
 /// number, and computes a dice roll given.
-// INCOMPLETE
 void throwDice (Game g, int diceScore) {
 	/// Firstly, we increase the turn.
 	g->turnNumber++;
@@ -610,50 +608,88 @@ int getARC(Game g, path pathToEdge) {
 // It is not legal for a player to make the moves OBTAIN_PUBLICATION
 // or OBTAIN_IP_PATENT (they can make the move START_SPINOFF)
 // you can assume that any pths passed in are NULL terminated strings.
-// INCOMPLETE
 int isLegalAction (Game g, action a) {
 	int isLegalAction = FALSE;
-	// THE CURRENT ONES DO NOT CHECK RESOURCES YET. CHECK THAT TOO!
+	
 	if (a.actionCode == PASS) {
 		isLegalAction = TRUE;
 	} else if (a.actionCode == BUILD_CAMPUS) {
 		short ID = getCampusID(g, a.destination);
-		if ((g->campus[ID].type == VACANT_VERTEX) &&
-		                                            (ID != NOT_FOUND)) {
-			isLegalAction = TRUE;
+		if (g->whoseTurn == UNI_A) {
+			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1) && (g->p1.MJs >= 1) && (g->p1.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1) && (g->p2.MJs >= 1) && (g->p2.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1) && (g->p3.MJs >= 1) && (g->p3.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
 		}
 	} else if (a.actionCode == BUILD_GO8) {
 		short ID = getCampusID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
-			if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p1.MJs >= 2) && (g->p1.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_B) {
-			if ((g->campus[ID].type == CAMPUS_B) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p2.MJs >= 2) && (g->p2.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_C) {
-			if ((g->campus[ID].type == CAMPUS_C) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p3.MJs >= 2) && (g->p3.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		}
 	} else if (a.actionCode == OBTAIN_ARC) {
 		short ID = getARCID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_B) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_C) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		}
 	} else if (a.actionCode == START_SPINOFF) {
-		// This doesn't have any other inputs.
+		if (g->whoseTurn == UNI_A) {
+			if ((g->p1.MJs >= 1) && (g->p1.MTVs >= 1) && (g->p1.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_B) {
+			if ((g->p2.MJs >= 1) && (g->p2.MTVs >= 1) && (g->p2.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_C) {
+			if ((g->p3.MJs >= 1) && (g->p3.MTVs >= 1) && (g->p3.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		// I dunno about this.
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
