@@ -110,6 +110,7 @@ typedef struct _game {
 
 /// These are our custom-defined functions. They are at the bottom of
 /// the whole file.
+void earnResources(Game g, int diceScore);
 Coord convertPath(path path);
 short getCampusID(Game g, path path);
 short getARCID(Game g, path path);
@@ -421,7 +422,20 @@ void throwDice (Game g, int diceScore) {
 	}
 
 	/// Then we give everyone resources based on the dice roll.
-	// ADD
+	earnResources(g, diceScore);
+	
+	/// If the diceroll was a 7, we convert MMONEYs and MTVs into THDs.
+	if (diceScore == 7) {
+		g->p1.THDs += (g->p1.MTVs + g->p1.MMONEYs);
+		g->p1.MTVs = 0;
+		g->p1.MMONEYs = 0;
+		g->p2.THDs += (g->p2.MTVs + g->p2.MMONEYs);
+		g->p2.MTVs = 0;
+		g->p2.MMONEYs = 0;
+		g->p3.THDs += (g->p3.MTVs + g->p3.MMONEYs);
+		g->p3.MTVs = 0;
+		g->p3.MMONEYs = 0;
+	}
 }
 
 /// These are the "getter" functions. They return something based on
@@ -984,6 +998,384 @@ short findARC(Game g, Coord start, Coord end) {
 	}
 
 	return ID;
+}
+
+void earnResources(Game g, int diceScore) {
+	/// This stores what region we're checking.
+	short region = 0;
+	/// This stores which vertex we're checking. This goes from 0 to 5
+	/// starting with the 1 o'clock position (same as the direction in
+	/// convertPath()).
+	short regionCheck = 0;
+	/// This stores the ID of the vertex we're checking.
+	short vertexID = 0;
+	
+	/// We stop checking once we've scanned all the regions.
+	while (region < NUM_REGIONS) {
+		/// If the region has the number of the dice score.
+		if (g->dice[region] == diceScore) {
+			regionCheck = 0;
+			while (regionCheck < 6) {
+				/// Here's the lengthy part, we determine the ID of the
+				/// vertex depending on the region and the direction.
+				if (region == 0) {
+					if (regionCheck == 0) {
+						vertexID = 1;
+					} else if (regionCheck == 1) {
+						vertexID = 4;
+					} else if (regionCheck == 2) {
+						vertexID = 9;
+					} else if (regionCheck == 3) {
+						vertexID = 8;
+					} else if (regionCheck == 4) {
+						vertexID = 3;
+					} else if (regionCheck == 5) {
+						vertexID = 0;
+					}
+				} else if (region == 1) {
+					if (regionCheck == 0) {
+						vertexID = 3;
+					} else if (regionCheck == 1) {
+						vertexID = 8;
+					} else if (regionCheck == 2) {
+						vertexID = 14;
+					} else if (regionCheck == 3) {
+						vertexID = 13;
+					} else if (regionCheck == 4) {
+						vertexID = 7;
+					} else if (regionCheck == 5) {
+						vertexID = 2;
+					}
+				} else if (region == 2) {
+					if (regionCheck == 0) {
+						vertexID = 5;
+					} else if (regionCheck == 1) {
+						vertexID = 10;
+					} else if (regionCheck == 2) {
+						vertexID = 16;
+					} else if (regionCheck == 3) {
+						vertexID = 15;
+					} else if (regionCheck == 4) {
+						vertexID = 9;
+					} else if (regionCheck == 5) {
+						vertexID = 4;
+					}
+				} else if (region == 3) {
+					if (regionCheck == 0) {
+						vertexID = 7;
+					} else if (regionCheck == 1) {
+						vertexID = 13;
+					} else if (regionCheck == 2) {
+						vertexID = 19;
+					} else if (regionCheck == 3) {
+						vertexID = 18;
+					} else if (regionCheck == 4) {
+						vertexID = 12;
+					} else if (regionCheck == 5) {
+						vertexID = 6;
+					}
+				} else if (region == 4) {
+					if (regionCheck == 0) {
+						vertexID = 9;
+					} else if (regionCheck == 1) {
+						vertexID = 15;
+					} else if (regionCheck == 2) {
+						vertexID = 21;
+					} else if (regionCheck == 3) {
+						vertexID = 20;
+					} else if (regionCheck == 4) {
+						vertexID = 14;
+					} else if (regionCheck == 5) {
+						vertexID = 8;
+					}
+				} else if (region == 5) {
+					if (regionCheck == 0) {
+						vertexID = 11;
+					} else if (regionCheck == 1) {
+						vertexID = 17;
+					} else if (regionCheck == 2) {
+						vertexID = 23;
+					} else if (regionCheck == 3) {
+						vertexID = 22;
+					} else if (regionCheck == 4) {
+						vertexID = 16;
+					} else if (regionCheck == 5) {
+						vertexID = 10;
+					}
+				} else if (region == 6) {
+					if (regionCheck == 0) {
+						vertexID = 14;
+					} else if (regionCheck == 1) {
+						vertexID = 20;
+					} else if (regionCheck == 2) {
+						vertexID = 26;
+					} else if (regionCheck == 3) {
+						vertexID = 25;
+					} else if (regionCheck == 4) {
+						vertexID = 19;
+					} else if (regionCheck == 5) {
+						vertexID = 13;
+					}
+				} else if (region == 7) {
+					if (regionCheck == 0) {
+						vertexID = 16;
+					} else if (regionCheck == 1) {
+						vertexID = 22;
+					} else if (regionCheck == 2) {
+						vertexID = 28;
+					} else if (regionCheck == 3) {
+						vertexID = 27;
+					} else if (regionCheck == 4) {
+						vertexID = 21;
+					} else if (regionCheck == 5) {
+						vertexID = 15;
+					}
+				} else if (region == 8) {
+					if (regionCheck == 0) {
+						vertexID = 19;
+					} else if (regionCheck == 1) {
+						vertexID = 25;
+					} else if (regionCheck == 2) {
+						vertexID = 31;
+					} else if (regionCheck == 3) {
+						vertexID = 30;
+					} else if (regionCheck == 4) {
+						vertexID = 24;
+					} else if (regionCheck == 5) {
+						vertexID = 18;
+					}
+				} else if (region == 9) {
+					if (regionCheck == 0) {
+						vertexID = 21;
+					} else if (regionCheck == 1) {
+						vertexID = 27;
+					} else if (regionCheck == 2) {
+						vertexID = 33;
+					} else if (regionCheck == 3) {
+						vertexID = 32;
+					} else if (regionCheck == 4) {
+						vertexID = 26;
+					} else if (regionCheck == 5) {
+						vertexID = 20;
+					}
+				} else if (region == 10) {
+					if (regionCheck == 0) {
+						vertexID = 23;
+					} else if (regionCheck == 1) {
+						vertexID = 29;
+					} else if (regionCheck == 2) {
+						vertexID = 35;
+					} else if (regionCheck == 3) {
+						vertexID = 34;
+					} else if (regionCheck == 4) {
+						vertexID = 28;
+					} else if (regionCheck == 5) {
+						vertexID = 22;
+					}
+				} else if (region == 11) {
+					if (regionCheck == 0) {
+						vertexID = 26;
+					} else if (regionCheck == 1) {
+						vertexID = 32;
+					} else if (regionCheck == 2) {
+						vertexID = 38;
+					} else if (regionCheck == 3) {
+						vertexID = 37;
+					} else if (regionCheck == 4) {
+						vertexID = 31;
+					} else if (regionCheck == 5) {
+						vertexID = 25;
+					}
+				} else if (region == 12) {
+					if (regionCheck == 0) {
+						vertexID = 28;
+					} else if (regionCheck == 1) {
+						vertexID = 34;
+					} else if (regionCheck == 2) {
+						vertexID = 40;
+					} else if (regionCheck == 3) {
+						vertexID = 39;
+					} else if (regionCheck == 4) {
+						vertexID = 33;
+					} else if (regionCheck == 5) {
+						vertexID = 27;
+					}
+				} else if (region == 13) {
+					if (regionCheck == 0) {
+						vertexID = 31;
+					} else if (regionCheck == 1) {
+						vertexID = 37;
+					} else if (regionCheck == 2) {
+						vertexID = 43;
+					} else if (regionCheck == 3) {
+						vertexID = 42;
+					} else if (regionCheck == 4) {
+						vertexID = 36;
+					} else if (regionCheck == 5) {
+						vertexID = 30;
+					}
+				} else if (region == 14) {
+					if (regionCheck == 0) {
+						vertexID = 33;
+					} else if (regionCheck == 1) {
+						vertexID = 39;
+					} else if (regionCheck == 2) {
+						vertexID = 45;
+					} else if (regionCheck == 3) {
+						vertexID = 44;
+					} else if (regionCheck == 4) {
+						vertexID = 38;
+					} else if (regionCheck == 5) {
+						vertexID = 32;
+					}
+				} else if (region == 15) {
+					if (regionCheck == 0) {
+						vertexID = 35;
+					} else if (regionCheck == 1) {
+						vertexID = 41;
+					} else if (regionCheck == 2) {
+						vertexID = 47;
+					} else if (regionCheck == 3) {
+						vertexID = 46;
+					} else if (regionCheck == 4) {
+						vertexID = 40;
+					} else if (regionCheck == 5) {
+						vertexID = 34;
+					}
+				} else if (region == 16) {
+					if (regionCheck == 0) {
+						vertexID = 38;
+					} else if (regionCheck == 1) {
+						vertexID = 44;
+					} else if (regionCheck == 2) {
+						vertexID = 49;
+					} else if (regionCheck == 3) {
+						vertexID = 48;
+					} else if (regionCheck == 4) {
+						vertexID = 43;
+					} else if (regionCheck == 5) {
+						vertexID = 37;
+					}
+				} else if (region == 17) {
+					if (regionCheck == 0) {
+						vertexID = 40;
+					} else if (regionCheck == 1) {
+						vertexID = 46;
+					} else if (regionCheck == 2) {
+						vertexID = 51;
+					} else if (regionCheck == 3) {
+						vertexID = 50;
+					} else if (regionCheck == 4) {
+						vertexID = 45;
+					} else if (regionCheck == 5) {
+						vertexID = 39;
+					}
+				} else if (region == 18) {
+					if (regionCheck == 0) {
+						vertexID = 45;
+					} else if (regionCheck == 1) {
+						vertexID = 50;
+					} else if (regionCheck == 2) {
+						vertexID = 53;
+					} else if (regionCheck == 3) {
+						vertexID = 52;
+					} else if (regionCheck == 4) {
+						vertexID = 49;
+					} else if (regionCheck == 5) {
+						vertexID = 44;
+					}
+				}
+				
+				if (g->campus[vertexID].type == CAMPUS_A) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p1.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p1.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p1.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p1.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p1.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p1.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == CAMPUS_B) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p2.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p2.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p2.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p2.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p2.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p2.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == CAMPUS_C) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p3.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p3.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p3.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p3.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p3.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p3.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == GO8_A) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p1.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p1.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p1.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p1.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p1.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p1.MMONEYs += 2;
+					}
+				} else if (g->campus[vertexID].type == GO8_B) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p2.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p2.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p2.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p2.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p2.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p2.MMONEYs += 2;
+					}
+				} else if (g->campus[vertexID].type == GO8_C) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p3.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p3.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p3.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p3.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p3.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p3.MMONEYs += 2;
+					}
+				}
+				regionCheck++;
+			}
+		}
+		region++;
+	}
 }
 
 void initialiseVertices(Game g) {
