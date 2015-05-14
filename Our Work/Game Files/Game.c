@@ -25,6 +25,14 @@
 #define NUM_EDGES 72
 #define NUM_VERTICES 54
 
+#define POINTS_PER_ARC 2
+#define POINTS_PER_CAMPUS 10
+#define POINTS_PER_GO8 20
+#define POINTS_PER_PATENT 10
+#define POINTS_PER_MOSTARCS 10
+#define POINTS_PER_MOSTPAPERS 10
+
+
 #define NOT_FOUND -1
 
 #define LEFT 'L'
@@ -650,67 +658,67 @@ int isLegalAction (Game g, action a) {
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
 		if (g->whoseTurn == UNI_A) {
 			if (a.disciplineFrom == STUDENT_BPS) {
-				if (g->p1.BPSs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+				if (g->p1.BPSs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_BQN) {
-				if (g->p1.BQNs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+				if (g->p1.BQNs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MJ) {
-				if (g->p1.MJs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+				if (g->p1.MJs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MTV) {
-				if (g->p1.MTVs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+				if (g->p1.MTVs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MMONEY) {
-				if (g->p1.MMONEYs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+				if (g->p1.MMONEYs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			}
 		} else if (g->whoseTurn == UNI_B) {
 			if (a.disciplineFrom == STUDENT_BPS) {
-				if (g->p2.BPSs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+				if (g->p2.BPSs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_BQN) {
-				if (g->p2.BQNs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+				if (g->p2.BQNs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MJ) {
-				if (g->p2.MJs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+				if (g->p2.MJs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MTV) {
-				if (g->p2.MTVs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+				if (g->p2.MTVs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MMONEY) {
-				if (g->p2.MMONEYs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+				if (g->p2.MMONEYs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			}
 		} else if (g->whoseTurn == UNI_C) {
 			if (a.disciplineFrom == STUDENT_BPS) {
-				if (g->p3.BPSs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+				if (g->p3.BPSs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_BQN) {
-				if (g->p3.BQNs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+				if (g->p3.BQNs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MJ) {
-				if (g->p3.MJs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+				if (g->p3.MJs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MTV) {
-				if (g->p3.MTVs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+				if (g->p3.MTVs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			} else if (a.disciplineFrom == STUDENT_MMONEY) {
-				if (g->p3.MMONEYs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+				if (g->p3.MMONEYs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
 					isLegalAction = TRUE;
 				}
 			}
@@ -726,34 +734,37 @@ int getKPIpoints (Game g, int player) {
 	int howManyKPIs = 0;
 
 	if (player == UNI_A) {
-		howManyKPIs += (g->p1.ARCs * 2);
-		howManyKPIs += (g->p1.campuses * 10);
-		howManyKPIs += (g->p1.GO8s * 20);
+		howManyKPIs += (g->p1.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p1.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p1.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p1.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_A) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_A) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_B) {
-		howManyKPIs += (g->p2.ARCs * 2);
-		howManyKPIs += (g->p2.campuses * 10);
-		howManyKPIs += (g->p2.GO8s * 20);
+		howManyKPIs += (g->p2.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p2.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p2.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p2.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_B) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_B) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_C) {
-		howManyKPIs += (g->p3.ARCs * 2);
-		howManyKPIs += (g->p3.campuses * 10);
-		howManyKPIs += (g->p3.GO8s * 20);
+		howManyKPIs += (g->p3.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p3.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p3.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p3.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_C) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_C) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	}
 
