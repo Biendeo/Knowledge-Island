@@ -14,7 +14,7 @@ Use your Github account to log in to the client. For Linux, this will come up du
 
 ### 3. Clone the repository.
 On the Github client, you'll see this repository on the sidebar. What you want to do is "clone" it by hitting the + in the top-left and hitting "clone". Then you just select Knowledge-Island, and it'll clone it. You can put this anywhere you want. If you want to, you can pop it in a Dropbox folder so all of your devices can edit the code (but you still need to push it in some way to the Github repository).
-On Linux, you'll find a way to clone, but you need a link to the repository. This is the one from the frontpage https://github.com/Biendeo/I-Am-Learning-To-Code.git
+On Linux, you'll find a way to clone, but you need a link to the repository. This is the one from the frontpage https://github.com/Biendeo/Knowledge-Island.git
 
 And that's the setup. As for publishing your code, here's the process.
 ### 1. Sync (or pull and push) the repository.
