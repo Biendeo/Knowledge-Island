@@ -648,7 +648,73 @@ int isLegalAction (Game g, action a) {
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
 		// I dunno about this either.
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
-		// This accepts two discipline types.
+		if (g->whoseTurn == UNI_A) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p1.BPSs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p1.BQNs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p1.MJs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p1.MTVs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p1.MMONEYs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p2.BPSs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p2.BQNs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p2.MJs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p2.MTVs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p2.MMONEYs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p3.BPSs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p3.BQNs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p3.MJs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p3.MTVs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p3.MMONEYs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo) {
+					isLegalAction = TRUE;
+				}
+			}
+		}
 	}
 	return isLegalAction;
 }
@@ -826,12 +892,10 @@ int getStudents (Game g, int player, int discipline) {
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	int exchangeRate = 3;
 	
-	/// Players should not be able to exchange THDs, so this is a high
-	/// value. Otherwise, the rate is 3 by default, unless that player
+	/// Players should not be able to exchange THDs, so that is not
+	/// listed. Otherwise, the rate is 3 by default, unless that player
 	/// has a GO8 or a campus on one of two places for each discipline.
-	if (disciplineFrom == STUDENT_THD) {
-		exchangeRate = 9000;
-	} else if (disciplineFrom == STUDENT_BPS) {
+	if (disciplineFrom == STUDENT_BPS) {
 		if (player == UNI_A) {
 			if ((g->campus[43].type == CAMPUS_A) ||
 			    (g->campus[48].type == CAMPUS_A) ||
