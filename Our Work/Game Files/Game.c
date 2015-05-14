@@ -25,6 +25,14 @@
 #define NUM_EDGES 72
 #define NUM_VERTICES 54
 
+#define POINTS_PER_ARC 2
+#define POINTS_PER_CAMPUS 10
+#define POINTS_PER_GO8 20
+#define POINTS_PER_PATENT 10
+#define POINTS_PER_MOSTARCS 10
+#define POINTS_PER_MOSTPAPERS 10
+
+
 #define NOT_FOUND -1
 
 #define LEFT 'L'
@@ -110,6 +118,7 @@ typedef struct _game {
 
 /// These are our custom-defined functions. They are at the bottom of
 /// the whole file.
+void earnResources(Game g, int diceScore);
 Coord convertPath(path path);
 short getCampusID(Game g, path path);
 short getARCID(Game g, path path);
@@ -124,7 +133,7 @@ void initialiseEdges(Game g);
 /// There's a "#defined" array, that is then stored in an actual array,
 /// which then is used to start the game creation function.
 
-/// When the game initalises, you store these numbers into variables,
+/// When the game initialises, you store these numbers into variables,
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
@@ -167,46 +176,58 @@ Game newGame (int discipline[], int dice[]) {
 	/// from the top-left, and go row-by-row.
 	initialiseVertices(g);
 	initialiseEdges(g);
+	
+	/// There's also the initial two ARCs and campuses per player.
+	g->ARC[24].type = ARC_A;
+	g->ARC[47].type = ARC_A;
+	g->ARC[54].type = ARC_B;
+	g->ARC[65].type = ARC_B;
+	g->ARC[ 5].type = ARC_C;
+	g->ARC[18].type = ARC_C;
+	g->campus[ 0].type = CAMPUS_A;
+	g->campus[53].type = CAMPUS_A;
+	g->campus[12].type = CAMPUS_B;
+	g->campus[41].type = CAMPUS_B;
+	g->campus[11].type = CAMPUS_C;
+	g->campus[42].type = CAMPUS_C;
 
 	/// Now the player data.
-	// When we add the two ARCs and campuses per player, we should set
-	// them here.
 	g->p1.playerID = UNI_A;
-	g->p1.ARCs = 0;
-	g->p1.campuses = 0;
+	g->p1.ARCs = 2;
+	g->p1.campuses = 1;
 	g->p1.GO8s = 0;
 	g->p1.patents = 0;
 	g->p1.papers = 0;
 	g->p1.THDs = 0;
-	g->p1.BPSs = 0;
-	g->p1.BQNs = 0;
-	g->p1.MJs = 0;
-	g->p1.MTVs = 0;
-	g->p1.MMONEYs = 0;
+	g->p1.BPSs = 3;
+	g->p1.BQNs = 3;
+	g->p1.MJs = 1;
+	g->p1.MTVs = 1;
+	g->p1.MMONEYs = 1;
 	g->p2.playerID = UNI_A;
-	g->p2.ARCs = 0;
-	g->p2.campuses = 0;
+	g->p2.ARCs = 2;
+	g->p2.campuses = 1;
 	g->p2.GO8s = 0;
 	g->p2.patents = 0;
 	g->p2.papers = 0;
 	g->p2.THDs = 0;
-	g->p2.BPSs = 0;
-	g->p2.BQNs = 0;
-	g->p2.MJs = 0;
-	g->p2.MTVs = 0;
-	g->p2.MMONEYs = 0;
+	g->p2.BPSs = 3;
+	g->p2.BQNs = 3;
+	g->p2.MJs = 1;
+	g->p2.MTVs = 1;
+	g->p2.MMONEYs = 1;
 	g->p3.playerID = UNI_C;
-	g->p3.ARCs = 0;
-	g->p3.campuses = 0;
+	g->p3.ARCs = 2;
+	g->p3.campuses = 1;
 	g->p3.GO8s = 0;
 	g->p3.patents = 0;
 	g->p3.papers = 0;
 	g->p3.THDs = 0;
-	g->p3.BPSs = 0;
-	g->p3.BQNs = 0;
-	g->p3.MJs = 0;
-	g->p3.MTVs = 0;
-	g->p3.MMONEYs = 0;
+	g->p3.BPSs = 3;
+	g->p3.BQNs = 3;
+	g->p3.MJs = 1;
+	g->p3.MTVs = 1;
+	g->p3.MMONEYs = 1;
 	return g;
 }
 
@@ -217,7 +238,6 @@ void disposeGame (Game g) {
 
 /// This does an action the user inputs. I guess the AI will jump
 /// directy to this step on his turn.
-// INCOMPLETE
 void makeAction (Game g, action a) {
 	if (a.actionCode == PASS) {
 		/// We don't do anything.
@@ -411,7 +431,6 @@ void makeAction (Game g, action a) {
 
 /// This advances the game to the next turn. It increases the turn
 /// number, and computes a dice roll given.
-// INCOMPLETE
 void throwDice (Game g, int diceScore) {
 	/// Firstly, we increase the turn.
 	g->turnNumber++;
@@ -421,7 +440,20 @@ void throwDice (Game g, int diceScore) {
 	}
 
 	/// Then we give everyone resources based on the dice roll.
-	// ADD
+	earnResources(g, diceScore);
+	
+	/// If the diceroll was a 7, we convert MMONEYs and MTVs into THDs.
+	if (diceScore == 7) {
+		g->p1.THDs += (g->p1.MTVs + g->p1.MMONEYs);
+		g->p1.MTVs = 0;
+		g->p1.MMONEYs = 0;
+		g->p2.THDs += (g->p2.MTVs + g->p2.MMONEYs);
+		g->p2.MTVs = 0;
+		g->p2.MMONEYs = 0;
+		g->p3.THDs += (g->p3.MTVs + g->p3.MMONEYs);
+		g->p3.MTVs = 0;
+		g->p3.MMONEYs = 0;
+	}
 }
 
 /// These are the "getter" functions. They return something based on
@@ -576,56 +608,160 @@ int getARC(Game g, path pathToEdge) {
 // It is not legal for a player to make the moves OBTAIN_PUBLICATION
 // or OBTAIN_IP_PATENT (they can make the move START_SPINOFF)
 // you can assume that any pths passed in are NULL terminated strings.
-// INCOMPLETE
 int isLegalAction (Game g, action a) {
 	int isLegalAction = FALSE;
-	// THE CURRENT ONES DO NOT CHECK RESOURCES YET. CHECK THAT TOO!
+	
 	if (a.actionCode == PASS) {
 		isLegalAction = TRUE;
 	} else if (a.actionCode == BUILD_CAMPUS) {
 		short ID = getCampusID(g, a.destination);
-		if ((g->campus[ID].type == VACANT_VERTEX) &&
-		                                            (ID != NOT_FOUND)) {
-			isLegalAction = TRUE;
+		if (g->whoseTurn == UNI_A) {
+			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1) && (g->p1.MJs >= 1) && (g->p1.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1) && (g->p2.MJs >= 1) && (g->p2.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1) && (g->p3.MJs >= 1) && (g->p3.MTVs >= 1)) {
+				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
+			}
 		}
 	} else if (a.actionCode == BUILD_GO8) {
 		short ID = getCampusID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
-			if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p1.MJs >= 2) && (g->p1.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_B) {
-			if ((g->campus[ID].type == CAMPUS_B) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p2.MJs >= 2) && (g->p2.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_C) {
-			if ((g->campus[ID].type == CAMPUS_C) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p3.MJs >= 2) && (g->p3.MMONEYs >= 3)) {
+				if ((g->campus[ID].type == CAMPUS_A) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		}
 	} else if (a.actionCode == OBTAIN_ARC) {
 		short ID = getARCID(g, a.destination);
 		if (g->whoseTurn == UNI_A) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_B) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		} if (g->whoseTurn == UNI_C) {
-			if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-				isLegalAction = TRUE;
+			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1)) {
+				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
+					isLegalAction = TRUE;
+				}
 			}
 		}
 	} else if (a.actionCode == START_SPINOFF) {
-		// This doesn't have any other inputs.
+		if (g->whoseTurn == UNI_A) {
+			if ((g->p1.MJs >= 1) && (g->p1.MTVs >= 1) && (g->p1.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_B) {
+			if ((g->p2.MJs >= 1) && (g->p2.MTVs >= 1) && (g->p2.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		} if (g->whoseTurn == UNI_C) {
+			if ((g->p3.MJs >= 1) && (g->p3.MTVs >= 1) && (g->p3.MMONEYs >= 1)) {
+				isLegalAction = TRUE;
+			}
+		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		// I dunno about this.
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
 		// I dunno about this either.
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
-		// This accepts two discipline types.
+		if (g->whoseTurn == UNI_A) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p1.BPSs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p1.BQNs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p1.MJs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p1.MTVs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p1.MMONEYs >= getExchangeRate(g, UNI_A, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_B) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p2.BPSs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p2.BQNs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p2.MJs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p2.MTVs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p2.MMONEYs >= getExchangeRate(g, UNI_B, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			}
+		} else if (g->whoseTurn == UNI_C) {
+			if (a.disciplineFrom == STUDENT_BPS) {
+				if (g->p3.BPSs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_BQN) {
+				if (g->p3.BQNs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MJ) {
+				if (g->p3.MJs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MTV) {
+				if (g->p3.MTVs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			} else if (a.disciplineFrom == STUDENT_MMONEY) {
+				if (g->p3.MMONEYs >= getExchangeRate(g, UNI_C, a.disciplineFrom, a.disciplineTo)) {
+					isLegalAction = TRUE;
+				}
+			}
+		}
 	}
 	return isLegalAction;
 }
@@ -634,39 +770,40 @@ int isLegalAction (Game g, action a) {
 
 /// This asks for a player, and returns how many KPI points they have.
 int getKPIpoints (Game g, int player) {
-	// If this is calculated rather than stored, then it will need to
-	// be expanded.
 	int howManyKPIs = 0;
 
 	if (player == UNI_A) {
-		howManyKPIs += (g->p1.ARCs * 2);
-		howManyKPIs += (g->p1.campuses * 10);
-		howManyKPIs += (g->p1.GO8s * 20);
+		howManyKPIs += (g->p1.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p1.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p1.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p1.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_A) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_A) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_B) {
-		howManyKPIs += (g->p2.ARCs * 2);
-		howManyKPIs += (g->p2.campuses * 10);
-		howManyKPIs += (g->p2.GO8s * 20);
+		howManyKPIs += (g->p2.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p2.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p2.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p2.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_B) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_B) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_C) {
-		howManyKPIs += (g->p3.ARCs * 2);
-		howManyKPIs += (g->p3.campuses * 10);
-		howManyKPIs += (g->p3.GO8s * 20);
+		howManyKPIs += (g->p3.ARCs * POINTS_PER_ARC);
+		howManyKPIs += (g->p3.campuses * POINTS_PER_CAMPUS);
+		howManyKPIs += (g->p3.GO8s * POINTS_PER_GO8);
+		howManyKPIs += (g->p3.patents * POINTS_PER_PATENT);
 		if (getMostARCs(g) == UNI_C) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
 		if (getMostPublications(g) == UNI_C) {
-			howManyKPIs += 10;
+			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	}
 
@@ -805,7 +942,125 @@ int getStudents (Game g, int player, int discipline) {
 int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 	int exchangeRate = 3;
 	
-	
+	/// Players should not be able to exchange THDs, so that is not
+	/// listed. Otherwise, the rate is 3 by default, unless that player
+	/// has a GO8 or a campus on one of two places for each discipline.
+	if (disciplineFrom == STUDENT_BPS) {
+		if (player == UNI_A) {
+			if ((g->campus[43].type == CAMPUS_A) ||
+			    (g->campus[48].type == CAMPUS_A) ||
+				(g->campus[43].type == GO8_A) ||
+				(g->campus[48].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[43].type == CAMPUS_B) ||
+			    (g->campus[48].type == CAMPUS_B) ||
+				(g->campus[43].type == GO8_B) ||
+				(g->campus[48].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[43].type == CAMPUS_C) ||
+			    (g->campus[48].type == CAMPUS_C) ||
+				(g->campus[43].type == GO8_C) ||
+				(g->campus[48].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_BQN) {
+		if (player == UNI_A) {
+			if ((g->campus[29].type == CAMPUS_A) ||
+			    (g->campus[35].type == CAMPUS_A) ||
+				(g->campus[29].type == GO8_A) ||
+				(g->campus[35].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[29].type == CAMPUS_B) ||
+			    (g->campus[35].type == CAMPUS_B) ||
+				(g->campus[29].type == GO8_B) ||
+				(g->campus[35].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[29].type == CAMPUS_C) ||
+			    (g->campus[35].type == CAMPUS_C) ||
+				(g->campus[29].type == GO8_C) ||
+				(g->campus[35].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MJ) {
+		if (player == UNI_A) {
+			if ((g->campus[46].type == CAMPUS_A) ||
+			    (g->campus[51].type == CAMPUS_A) ||
+				(g->campus[46].type == GO8_A) ||
+				(g->campus[51].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[46].type == CAMPUS_B) ||
+			    (g->campus[51].type == CAMPUS_B) ||
+				(g->campus[46].type == GO8_B) ||
+				(g->campus[51].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[46].type == CAMPUS_C) ||
+			    (g->campus[51].type == CAMPUS_C) ||
+				(g->campus[46].type == GO8_C) ||
+				(g->campus[51].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MTV) {
+		if (player == UNI_A) {
+			if ((g->campus[2].type == CAMPUS_A) ||
+			    (g->campus[3].type == CAMPUS_A) ||
+				(g->campus[2].type == GO8_A) ||
+				(g->campus[3].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[2].type == CAMPUS_B) ||
+			    (g->campus[3].type == CAMPUS_B) ||
+				(g->campus[2].type == GO8_B) ||
+				(g->campus[3].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[2].type == CAMPUS_C) ||
+			    (g->campus[3].type == CAMPUS_C) ||
+				(g->campus[2].type == GO8_C) ||
+				(g->campus[3].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	} else if (disciplineFrom == STUDENT_MMONEY) {
+		if (player == UNI_A) {
+			if ((g->campus[4].type == CAMPUS_A) ||
+			    (g->campus[5].type == CAMPUS_A) ||
+				(g->campus[4].type == GO8_A) ||
+				(g->campus[5].type == GO8_A)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_B) {
+			if ((g->campus[4].type == CAMPUS_B) ||
+			    (g->campus[5].type == CAMPUS_B) ||
+				(g->campus[4].type == GO8_B) ||
+				(g->campus[5].type == GO8_B)) {
+				exchangeRate = 2;
+			}
+		} else if (player == UNI_C) {
+			if ((g->campus[4].type == CAMPUS_C) ||
+			    (g->campus[5].type == CAMPUS_C) ||
+				(g->campus[4].type == GO8_C) ||
+				(g->campus[5].type == GO8_C)) {
+				exchangeRate = 2;
+			}
+		}
+	}
 
 	return exchangeRate;
 }
@@ -984,6 +1239,384 @@ short findARC(Game g, Coord start, Coord end) {
 	}
 
 	return ID;
+}
+
+void earnResources(Game g, int diceScore) {
+	/// This stores what region we're checking.
+	short region = 0;
+	/// This stores which vertex we're checking. This goes from 0 to 5
+	/// starting with the 1 o'clock position (same as the direction in
+	/// convertPath()).
+	short regionCheck = 0;
+	/// This stores the ID of the vertex we're checking.
+	short vertexID = 0;
+	
+	/// We stop checking once we've scanned all the regions.
+	while (region < NUM_REGIONS) {
+		/// If the region has the number of the dice score.
+		if (g->dice[region] == diceScore) {
+			regionCheck = 0;
+			while (regionCheck < 6) {
+				/// Here's the lengthy part, we determine the ID of the
+				/// vertex depending on the region and the direction.
+				if (region == 0) {
+					if (regionCheck == 0) {
+						vertexID = 1;
+					} else if (regionCheck == 1) {
+						vertexID = 4;
+					} else if (regionCheck == 2) {
+						vertexID = 9;
+					} else if (regionCheck == 3) {
+						vertexID = 8;
+					} else if (regionCheck == 4) {
+						vertexID = 3;
+					} else if (regionCheck == 5) {
+						vertexID = 0;
+					}
+				} else if (region == 1) {
+					if (regionCheck == 0) {
+						vertexID = 3;
+					} else if (regionCheck == 1) {
+						vertexID = 8;
+					} else if (regionCheck == 2) {
+						vertexID = 14;
+					} else if (regionCheck == 3) {
+						vertexID = 13;
+					} else if (regionCheck == 4) {
+						vertexID = 7;
+					} else if (regionCheck == 5) {
+						vertexID = 2;
+					}
+				} else if (region == 2) {
+					if (regionCheck == 0) {
+						vertexID = 5;
+					} else if (regionCheck == 1) {
+						vertexID = 10;
+					} else if (regionCheck == 2) {
+						vertexID = 16;
+					} else if (regionCheck == 3) {
+						vertexID = 15;
+					} else if (regionCheck == 4) {
+						vertexID = 9;
+					} else if (regionCheck == 5) {
+						vertexID = 4;
+					}
+				} else if (region == 3) {
+					if (regionCheck == 0) {
+						vertexID = 7;
+					} else if (regionCheck == 1) {
+						vertexID = 13;
+					} else if (regionCheck == 2) {
+						vertexID = 19;
+					} else if (regionCheck == 3) {
+						vertexID = 18;
+					} else if (regionCheck == 4) {
+						vertexID = 12;
+					} else if (regionCheck == 5) {
+						vertexID = 6;
+					}
+				} else if (region == 4) {
+					if (regionCheck == 0) {
+						vertexID = 9;
+					} else if (regionCheck == 1) {
+						vertexID = 15;
+					} else if (regionCheck == 2) {
+						vertexID = 21;
+					} else if (regionCheck == 3) {
+						vertexID = 20;
+					} else if (regionCheck == 4) {
+						vertexID = 14;
+					} else if (regionCheck == 5) {
+						vertexID = 8;
+					}
+				} else if (region == 5) {
+					if (regionCheck == 0) {
+						vertexID = 11;
+					} else if (regionCheck == 1) {
+						vertexID = 17;
+					} else if (regionCheck == 2) {
+						vertexID = 23;
+					} else if (regionCheck == 3) {
+						vertexID = 22;
+					} else if (regionCheck == 4) {
+						vertexID = 16;
+					} else if (regionCheck == 5) {
+						vertexID = 10;
+					}
+				} else if (region == 6) {
+					if (regionCheck == 0) {
+						vertexID = 14;
+					} else if (regionCheck == 1) {
+						vertexID = 20;
+					} else if (regionCheck == 2) {
+						vertexID = 26;
+					} else if (regionCheck == 3) {
+						vertexID = 25;
+					} else if (regionCheck == 4) {
+						vertexID = 19;
+					} else if (regionCheck == 5) {
+						vertexID = 13;
+					}
+				} else if (region == 7) {
+					if (regionCheck == 0) {
+						vertexID = 16;
+					} else if (regionCheck == 1) {
+						vertexID = 22;
+					} else if (regionCheck == 2) {
+						vertexID = 28;
+					} else if (regionCheck == 3) {
+						vertexID = 27;
+					} else if (regionCheck == 4) {
+						vertexID = 21;
+					} else if (regionCheck == 5) {
+						vertexID = 15;
+					}
+				} else if (region == 8) {
+					if (regionCheck == 0) {
+						vertexID = 19;
+					} else if (regionCheck == 1) {
+						vertexID = 25;
+					} else if (regionCheck == 2) {
+						vertexID = 31;
+					} else if (regionCheck == 3) {
+						vertexID = 30;
+					} else if (regionCheck == 4) {
+						vertexID = 24;
+					} else if (regionCheck == 5) {
+						vertexID = 18;
+					}
+				} else if (region == 9) {
+					if (regionCheck == 0) {
+						vertexID = 21;
+					} else if (regionCheck == 1) {
+						vertexID = 27;
+					} else if (regionCheck == 2) {
+						vertexID = 33;
+					} else if (regionCheck == 3) {
+						vertexID = 32;
+					} else if (regionCheck == 4) {
+						vertexID = 26;
+					} else if (regionCheck == 5) {
+						vertexID = 20;
+					}
+				} else if (region == 10) {
+					if (regionCheck == 0) {
+						vertexID = 23;
+					} else if (regionCheck == 1) {
+						vertexID = 29;
+					} else if (regionCheck == 2) {
+						vertexID = 35;
+					} else if (regionCheck == 3) {
+						vertexID = 34;
+					} else if (regionCheck == 4) {
+						vertexID = 28;
+					} else if (regionCheck == 5) {
+						vertexID = 22;
+					}
+				} else if (region == 11) {
+					if (regionCheck == 0) {
+						vertexID = 26;
+					} else if (regionCheck == 1) {
+						vertexID = 32;
+					} else if (regionCheck == 2) {
+						vertexID = 38;
+					} else if (regionCheck == 3) {
+						vertexID = 37;
+					} else if (regionCheck == 4) {
+						vertexID = 31;
+					} else if (regionCheck == 5) {
+						vertexID = 25;
+					}
+				} else if (region == 12) {
+					if (regionCheck == 0) {
+						vertexID = 28;
+					} else if (regionCheck == 1) {
+						vertexID = 34;
+					} else if (regionCheck == 2) {
+						vertexID = 40;
+					} else if (regionCheck == 3) {
+						vertexID = 39;
+					} else if (regionCheck == 4) {
+						vertexID = 33;
+					} else if (regionCheck == 5) {
+						vertexID = 27;
+					}
+				} else if (region == 13) {
+					if (regionCheck == 0) {
+						vertexID = 31;
+					} else if (regionCheck == 1) {
+						vertexID = 37;
+					} else if (regionCheck == 2) {
+						vertexID = 43;
+					} else if (regionCheck == 3) {
+						vertexID = 42;
+					} else if (regionCheck == 4) {
+						vertexID = 36;
+					} else if (regionCheck == 5) {
+						vertexID = 30;
+					}
+				} else if (region == 14) {
+					if (regionCheck == 0) {
+						vertexID = 33;
+					} else if (regionCheck == 1) {
+						vertexID = 39;
+					} else if (regionCheck == 2) {
+						vertexID = 45;
+					} else if (regionCheck == 3) {
+						vertexID = 44;
+					} else if (regionCheck == 4) {
+						vertexID = 38;
+					} else if (regionCheck == 5) {
+						vertexID = 32;
+					}
+				} else if (region == 15) {
+					if (regionCheck == 0) {
+						vertexID = 35;
+					} else if (regionCheck == 1) {
+						vertexID = 41;
+					} else if (regionCheck == 2) {
+						vertexID = 47;
+					} else if (regionCheck == 3) {
+						vertexID = 46;
+					} else if (regionCheck == 4) {
+						vertexID = 40;
+					} else if (regionCheck == 5) {
+						vertexID = 34;
+					}
+				} else if (region == 16) {
+					if (regionCheck == 0) {
+						vertexID = 38;
+					} else if (regionCheck == 1) {
+						vertexID = 44;
+					} else if (regionCheck == 2) {
+						vertexID = 49;
+					} else if (regionCheck == 3) {
+						vertexID = 48;
+					} else if (regionCheck == 4) {
+						vertexID = 43;
+					} else if (regionCheck == 5) {
+						vertexID = 37;
+					}
+				} else if (region == 17) {
+					if (regionCheck == 0) {
+						vertexID = 40;
+					} else if (regionCheck == 1) {
+						vertexID = 46;
+					} else if (regionCheck == 2) {
+						vertexID = 51;
+					} else if (regionCheck == 3) {
+						vertexID = 50;
+					} else if (regionCheck == 4) {
+						vertexID = 45;
+					} else if (regionCheck == 5) {
+						vertexID = 39;
+					}
+				} else if (region == 18) {
+					if (regionCheck == 0) {
+						vertexID = 45;
+					} else if (regionCheck == 1) {
+						vertexID = 50;
+					} else if (regionCheck == 2) {
+						vertexID = 53;
+					} else if (regionCheck == 3) {
+						vertexID = 52;
+					} else if (regionCheck == 4) {
+						vertexID = 49;
+					} else if (regionCheck == 5) {
+						vertexID = 44;
+					}
+				}
+				
+				if (g->campus[vertexID].type == CAMPUS_A) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p1.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p1.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p1.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p1.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p1.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p1.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == CAMPUS_B) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p2.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p2.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p2.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p2.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p2.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p2.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == CAMPUS_C) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p3.THDs++;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p3.BPSs++;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p3.BQNs++;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p3.MJs++;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p3.MTVs++;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p3.MMONEYs++;
+					}
+				} else if (g->campus[vertexID].type == GO8_A) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p1.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p1.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p1.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p1.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p1.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p1.MMONEYs += 2;
+					}
+				} else if (g->campus[vertexID].type == GO8_B) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p2.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p2.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p2.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p2.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p2.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p2.MMONEYs += 2;
+					}
+				} else if (g->campus[vertexID].type == GO8_C) {
+					if (g->discipline[region] == STUDENT_THD) {
+						g->p3.THDs += 2;
+					} else if (g->discipline[region] == STUDENT_BPS) {
+						g->p3.BPSs += 2;
+					} else if (g->discipline[region] == STUDENT_BQN) {
+						g->p3.BQNs += 2;
+					} else if (g->discipline[region] == STUDENT_MJ) {
+						g->p3.MJs += 2;
+					} else if (g->discipline[region] == STUDENT_MTV) {
+						g->p3.MTVs += 2;
+					} else if (g->discipline[region] == STUDENT_MMONEY) {
+						g->p3.MMONEYs += 2;
+					}
+				}
+				regionCheck++;
+			}
+		}
+		region++;
+	}
 }
 
 void initialiseVertices(Game g) {
