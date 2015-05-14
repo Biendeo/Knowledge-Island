@@ -25,7 +25,7 @@
 
 int playTurn(Game g);
 int checkWin(Game g);
-void printWinner(Game g, int gHasWon);
+void printWinner(Game g, int hasWon);
 int makeDiceValue(void);
 
 int main(int argc, char *argv[]) {

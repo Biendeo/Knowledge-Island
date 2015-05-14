@@ -124,6 +124,8 @@ short getCampusID(Game g, path path);
 short getARCID(Game g, path path);
 short findCampus(Game g, Coord coord);
 short findARC(Game g, Coord start, Coord end);
+short validCampusPosition(Game g, int player, short ID);
+short validARCPosition(Game g, int player, short ID);
 void initialiseVertices(Game g);
 void initialiseEdges(Game g);
 
@@ -137,7 +139,7 @@ void initialiseEdges(Game g);
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
-	Game g = malloc(sizeof(Game));
+	Game g = malloc(sizeof(Game) + 50000);
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
 
@@ -149,14 +151,11 @@ Game newGame (int discipline[], int dice[]) {
 		g->dice[pos] = dice[pos];
 		pos++;
 	}
-
+	
 	g->exchangeRate = 3;
 
 	/// Now we set all the building data.
 	/// All the data is initially "flushed".
-	// We need to make a function that assigns the starts and ends, and
-	// just return void. While order won't matter, every value needs to
-	// be assigned.
 	pos = 0;
 	while (pos < NUM_EDGES) {
 		if (pos < NUM_VERTICES) {
@@ -194,7 +193,7 @@ Game newGame (int discipline[], int dice[]) {
 	/// Now the player data.
 	g->p1.playerID = UNI_A;
 	g->p1.ARCs = 2;
-	g->p1.campuses = 1;
+	g->p1.campuses = 2;
 	g->p1.GO8s = 0;
 	g->p1.patents = 0;
 	g->p1.papers = 0;
@@ -206,7 +205,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MMONEYs = 1;
 	g->p2.playerID = UNI_A;
 	g->p2.ARCs = 2;
-	g->p2.campuses = 1;
+	g->p2.campuses = 2;
 	g->p2.GO8s = 0;
 	g->p2.patents = 0;
 	g->p2.papers = 0;
@@ -218,7 +217,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p2.MMONEYs = 1;
 	g->p3.playerID = UNI_C;
 	g->p3.ARCs = 2;
-	g->p3.campuses = 1;
+	g->p3.campuses = 2;
 	g->p3.GO8s = 0;
 	g->p3.patents = 0;
 	g->p3.papers = 0;
@@ -233,11 +232,13 @@ Game newGame (int discipline[], int dice[]) {
 
 /// This frees the game when you're done. THIS IS IMPORTANT.
 void disposeGame (Game g) {
+	printf("OP\n");
+	printf("%p\n", g);
 	free(g);
 }
 
-/// This does an action the user inputs. I guess the AI will jump
-/// directy to this step on his turn.
+/// This does an action the user inputs. It only runs if isLegalAction
+/// returned true.
 void makeAction (Game g, action a) {
 	if (a.actionCode == PASS) {
 		/// We don't do anything.
@@ -251,18 +252,21 @@ void makeAction (Game g, action a) {
 			g->p1.BQNs--;
 			g->p1.MJs--;
 			g->p1.MTVs--;
+			g->p1.campuses++;
 		} else if (g->whoseTurn == UNI_B) {
 			g->campus[ID].type = CAMPUS_B;
 			g->p2.BPSs--;
 			g->p2.BQNs--;
 			g->p2.MJs--;
 			g->p2.MTVs--;
+			g->p2.campuses++;
 		} else if (g->whoseTurn == UNI_C) {
 			g->campus[ID].type = CAMPUS_C;
 			g->p3.BPSs--;
 			g->p3.BQNs--;
 			g->p3.MJs--;
 			g->p3.MTVs--;
+			g->p3.campuses++;
 		}
 	} else if (a.actionCode == BUILD_GO8) {
 		/// If they build a GO8, first we find what vertex ID they are
@@ -272,14 +276,20 @@ void makeAction (Game g, action a) {
 			g->campus[ID].type = GO8_A;
 			g->p1.MJs -= 2;
 			g->p1.MMONEYs -= 3;
+			g->p1.campuses--;
+			g->p1.GO8s++;
 		} else if (g->whoseTurn == UNI_B) {
 			g->campus[ID].type = GO8_B;
 			g->p2.MJs -= 2;
 			g->p2.MMONEYs -= 3;
+			g->p2.campuses--;
+			g->p2.GO8s++;
 		} else if (g->whoseTurn == UNI_C) {
 			g->campus[ID].type = GO8_C;
 			g->p3.MJs -= 2;
 			g->p3.MMONEYs -= 3;
+			g->p3.campuses--;
+			g->p3.GO8s++;
 		}
 	} else if (a.actionCode == OBTAIN_ARC) {
 		/// If they build an ARC, first we find what vertex ID they are
@@ -289,14 +299,17 @@ void makeAction (Game g, action a) {
 			g->ARC[ID].type = ARC_A;
 			g->p1.BPSs--;
 			g->p1.BQNs--;
+			g->p1.ARCs++;
 		} else if (g->whoseTurn == UNI_B) {
 			g->ARC[ID].type = ARC_B;
 			g->p2.BPSs--;
 			g->p2.BQNs--;
+			g->p2.ARCs++;
 		} else if (g->whoseTurn == UNI_C) {
 			g->ARC[ID].type = ARC_C;
 			g->p3.BPSs--;
 			g->p3.BQNs--;
+			g->p3.ARCs++;
 		}
 	} else if (a.actionCode == START_SPINOFF) {
 		if (g->whoseTurn == UNI_A) {
@@ -618,19 +631,25 @@ int isLegalAction (Game g, action a) {
 		if (g->whoseTurn == UNI_A) {
 			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1) && (g->p1.MJs >= 1) && (g->p1.MTVs >= 1)) {
 				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validCampusPosition(g, UNI_A, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		} else if (g->whoseTurn == UNI_B) {
 			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1) && (g->p2.MJs >= 1) && (g->p2.MTVs >= 1)) {
 				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validCampusPosition(g, UNI_B, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		} else if (g->whoseTurn == UNI_C) {
 			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1) && (g->p3.MJs >= 1) && (g->p3.MTVs >= 1)) {
 				if ((g->campus[ID].type == VACANT_VERTEX) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validCampusPosition(g, UNI_C, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		}
@@ -660,19 +679,25 @@ int isLegalAction (Game g, action a) {
 		if (g->whoseTurn == UNI_A) {
 			if ((g->p1.BPSs >= 1) && (g->p1.BQNs >= 1)) {
 				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validARCPosition(g, UNI_A, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		} if (g->whoseTurn == UNI_B) {
 			if ((g->p2.BPSs >= 1) && (g->p2.BQNs >= 1)) {
 				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validARCPosition(g, UNI_B, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		} if (g->whoseTurn == UNI_C) {
 			if ((g->p3.BPSs >= 1) && (g->p3.BQNs >= 1)) {
 				if ((g->ARC[ID].type == VACANT_ARC) && (ID != NOT_FOUND)) {
-					isLegalAction = TRUE;
+					if (validARCPosition(g, UNI_C, ID) == TRUE) {
+						isLegalAction = TRUE;
+					}
 				}
 			}
 		}
@@ -762,6 +787,11 @@ int isLegalAction (Game g, action a) {
 				}
 			}
 		}
+	}
+	
+	/// If it's terra nullius, no turn is acted.
+	if ((getTurnNumber(g) == -1) && (a.actionCode != PASS)) {
+		isLegalAction = FALSE;
 	}
 	return isLegalAction;
 }
@@ -1239,6 +1269,36 @@ short findARC(Game g, Coord start, Coord end) {
 	}
 
 	return ID;
+}
+
+short validCampusPosition(Game g, int player, short ID) {
+	/// This stores whether their campus can actually be placed there.
+	// CHANGE TO FALSE WHEN DONE
+	short isItValid = TRUE;
+	
+	/// Firstly, we check to see if it's touching a friendly road.
+	/// We then mark it as valid for now, we'll recheck after.
+	if (ID == 0) {
+		
+	}
+	
+	
+	return isItValid;
+}
+
+short validARCPosition(Game g, int player, short ID) {
+	/// This stores whether their ARC can actually be placed there.
+	// CHANGE TO FALSE WHEN DONE
+	short isItValid = TRUE;
+	
+	/// Firstly, we check to see if it's touching a friendly road.
+	/// We then mark it as valid for now, we'll recheck after.
+	if (ID == 0) {
+		
+	}
+	
+	
+	return isItValid;
 }
 
 void earnResources(Game g, int diceScore) {
