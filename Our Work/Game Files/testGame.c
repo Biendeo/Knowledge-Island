@@ -89,9 +89,9 @@ int main(int argc, char *argv[]) {
 	
 	// You can only assert these on turn -1, they might change.
 	if (getTurnNumber(g) == -1) {
-		assert (getKPIpoints(g, UNI_A) == 24);
-		assert (getKPIpoints(g, UNI_B) == 24);
-		assert (getKPIpoints(g, UNI_C) == 24);
+		assert (getKPIpoints(g, UNI_A) == 20);
+		assert (getKPIpoints(g, UNI_B) == 20);
+		assert (getKPIpoints(g, UNI_C) == 20);
 		assert (getCampuses(g, UNI_A) == 2);
 		assert (getCampuses(g, UNI_B) == 2);
 		assert (getCampuses(g, UNI_C) == 2);
