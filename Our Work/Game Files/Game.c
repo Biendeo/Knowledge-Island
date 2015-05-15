@@ -139,6 +139,8 @@ void initialiseEdges(Game g);
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
+	// The program crashes for no reason unless I allocate 50000 more
+	// bytes of memory. I'll try to sort this out, but it's weird.
 	Game g = malloc(sizeof(Game) + 50000);
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
@@ -176,13 +178,7 @@ Game newGame (int discipline[], int dice[]) {
 	initialiseVertices(g);
 	initialiseEdges(g);
 	
-	/// There's also the initial two ARCs and campuses per player.
-	g->ARC[24].type = ARC_A;
-	g->ARC[47].type = ARC_A;
-	g->ARC[54].type = ARC_B;
-	g->ARC[65].type = ARC_B;
-	g->ARC[ 5].type = ARC_C;
-	g->ARC[18].type = ARC_C;
+	/// There's also the initial two campuses per player.
 	g->campus[ 0].type = CAMPUS_A;
 	g->campus[53].type = CAMPUS_A;
 	g->campus[12].type = CAMPUS_B;
