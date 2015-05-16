@@ -139,6 +139,15 @@ void initialiseEdges(Game g);
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
+	printf("******************************\n");
+	printf("*            Game.c          *\n");
+	printf("*   By Vincent Tan, Pua Pao, *\n");
+	printf("*      Thomas Moffet, and    *\n");
+	printf("*       George Mountakis     *\n");
+	printf("******************************\n");
+	
+	printf("\nGame freshly baked on 16/05/15\n\n");
+	
 	// The program crashes for no reason unless I allocate 50000 more
 	// bytes of memory. I'll try to sort this out, but it's weird.
 	Game g = malloc(sizeof(Game) + 50000);
@@ -1312,7 +1321,11 @@ void earnResources(Game g, int diceScore) {
 			while (regionCheck < 6) {
 				/// Here's the lengthy part, we determine the ID of the
 				/// vertex depending on the region and the direction.
-				if (region == 0) {
+				// Originally these were ordered from top to bottom,
+				// row at a time. The specs want it left to right,
+				// column at a time. This works, but it's just not
+				// ordered right.
+				if (region == 7) {
 					if (regionCheck == 0) {
 						vertexID = 1;
 					} else if (regionCheck == 1) {
@@ -1326,7 +1339,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 0;
 					}
-				} else if (region == 1) {
+				} else if (region == 3) {
 					if (regionCheck == 0) {
 						vertexID = 3;
 					} else if (regionCheck == 1) {
@@ -1340,7 +1353,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 2;
 					}
-				} else if (region == 2) {
+				} else if (region == 12) {
 					if (regionCheck == 0) {
 						vertexID = 5;
 					} else if (regionCheck == 1) {
@@ -1354,7 +1367,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 4;
 					}
-				} else if (region == 3) {
+				} else if (region == 0) {
 					if (regionCheck == 0) {
 						vertexID = 7;
 					} else if (regionCheck == 1) {
@@ -1368,7 +1381,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 6;
 					}
-				} else if (region == 4) {
+				} else if (region == 8) {
 					if (regionCheck == 0) {
 						vertexID = 9;
 					} else if (regionCheck == 1) {
@@ -1382,7 +1395,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 8;
 					}
-				} else if (region == 5) {
+				} else if (region == 16) {
 					if (regionCheck == 0) {
 						vertexID = 11;
 					} else if (regionCheck == 1) {
@@ -1396,7 +1409,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 10;
 					}
-				} else if (region == 6) {
+				} else if (region == 4) {
 					if (regionCheck == 0) {
 						vertexID = 14;
 					} else if (regionCheck == 1) {
@@ -1410,7 +1423,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 13;
 					}
-				} else if (region == 7) {
+				} else if (region == 13) {
 					if (regionCheck == 0) {
 						vertexID = 16;
 					} else if (regionCheck == 1) {
@@ -1424,7 +1437,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 15;
 					}
-				} else if (region == 8) {
+				} else if (region == 1) {
 					if (regionCheck == 0) {
 						vertexID = 19;
 					} else if (regionCheck == 1) {
@@ -1452,7 +1465,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 20;
 					}
-				} else if (region == 10) {
+				} else if (region == 17) {
 					if (regionCheck == 0) {
 						vertexID = 23;
 					} else if (regionCheck == 1) {
@@ -1466,7 +1479,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 22;
 					}
-				} else if (region == 11) {
+				} else if (region == 5) {
 					if (regionCheck == 0) {
 						vertexID = 26;
 					} else if (regionCheck == 1) {
@@ -1480,7 +1493,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 25;
 					}
-				} else if (region == 12) {
+				} else if (region == 14) {
 					if (regionCheck == 0) {
 						vertexID = 28;
 					} else if (regionCheck == 1) {
@@ -1494,7 +1507,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 27;
 					}
-				} else if (region == 13) {
+				} else if (region == 2) {
 					if (regionCheck == 0) {
 						vertexID = 31;
 					} else if (regionCheck == 1) {
@@ -1508,7 +1521,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 30;
 					}
-				} else if (region == 14) {
+				} else if (region == 10) {
 					if (regionCheck == 0) {
 						vertexID = 33;
 					} else if (regionCheck == 1) {
@@ -1522,7 +1535,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 32;
 					}
-				} else if (region == 15) {
+				} else if (region == 18) {
 					if (regionCheck == 0) {
 						vertexID = 35;
 					} else if (regionCheck == 1) {
@@ -1536,7 +1549,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 34;
 					}
-				} else if (region == 16) {
+				} else if (region == 6) {
 					if (regionCheck == 0) {
 						vertexID = 38;
 					} else if (regionCheck == 1) {
@@ -1550,7 +1563,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 37;
 					}
-				} else if (region == 17) {
+				} else if (region == 15) {
 					if (regionCheck == 0) {
 						vertexID = 40;
 					} else if (regionCheck == 1) {
@@ -1564,7 +1577,7 @@ void earnResources(Game g, int diceScore) {
 					} else if (regionCheck == 5) {
 						vertexID = 39;
 					}
-				} else if (region == 18) {
+				} else if (region == 11) {
 					if (regionCheck == 0) {
 						vertexID = 45;
 					} else if (regionCheck == 1) {
