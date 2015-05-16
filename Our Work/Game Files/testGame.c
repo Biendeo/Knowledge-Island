@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "Game.h"
 
@@ -39,25 +40,6 @@ int main(int argc, char *argv[]) {
 	assert (getDiscipline(g,  7) == STUDENT_MTV);
 	assert (getDiscipline(g,  8) == STUDENT_BPS);
 	assert (getDiscipline(g,  9) == STUDENT_MTV);
-	printf("%d\n",(getDiscipline(g, 0)));
-	printf("%d\n",(getDiscipline(g, 1)));
-	printf("%d\n",(getDiscipline(g, 2)));
-	printf("%d\n",(getDiscipline(g, 3)));
-	printf("%d\n",(getDiscipline(g, 4)));
-	printf("%d\n",(getDiscipline(g, 5)));
-	printf("%d\n",(getDiscipline(g, 6)));
-	printf("%d\n",(getDiscipline(g, 7)));
-	printf("%d\n",(getDiscipline(g, 8)));
-	printf("%d\n",(getDiscipline(g, 9)));
-	printf("%d\n",(getDiscipline(g, 10)));
-	printf("%d\n",(getDiscipline(g, 11)));
-	printf("%d\n",(getDiscipline(g, 12)));
-	printf("%d\n",(getDiscipline(g, 13)));
-	printf("%d\n",(getDiscipline(g, 14)));
-	printf("%d\n",(getDiscipline(g, 15)));
-	printf("%d\n",(getDiscipline(g, 16)));
-	printf("%d\n",(getDiscipline(g, 17)));
-	printf("%d\n",(getDiscipline(g, 18)));
 	assert (getDiscipline(g, 10) == STUDENT_BQN);
 	assert (getDiscipline(g, 11) == STUDENT_MJ);
 	assert (getDiscipline(g, 12) == STUDENT_BQN);
@@ -178,8 +160,7 @@ int main(int argc, char *argv[]) {
 		assert (getExchangeRate(g, UNI_C, STUDENT_MTV, STUDENT_MMONEY) == 3);
 		assert (getExchangeRate(g, UNI_C, STUDENT_MMONEY, STUDENT_MTV) == 3);
 	}
-
-
+	
 	// action a;
 	// Add some action checks.
 	// It is not legal to make any action during Terra Nullis ie
@@ -195,7 +176,7 @@ int main(int argc, char *argv[]) {
 	assert (isLegalAction(g, 6) == FALSE);
 	assert (isLegalAction(g, 7) == FALSE);
 	*/
-	throwDice(g, 2);
+	// throwDice(g, 2);
 	
 	disposeGame(g);
 	

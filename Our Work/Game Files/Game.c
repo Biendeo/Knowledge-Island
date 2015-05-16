@@ -188,7 +188,7 @@ Game newGame (int discipline[], int dice[]) {
 
 	/// Now the player data.
 	g->p1.playerID = UNI_A;
-	g->p1.ARCs = 2;
+	g->p1.ARCs = 0;
 	g->p1.campuses = 2;
 	g->p1.GO8s = 0;
 	g->p1.patents = 0;
@@ -200,7 +200,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MTVs = 1;
 	g->p1.MMONEYs = 1;
 	g->p2.playerID = UNI_A;
-	g->p2.ARCs = 2;
+	g->p2.ARCs = 0;
 	g->p2.campuses = 2;
 	g->p2.GO8s = 0;
 	g->p2.patents = 0;
@@ -212,7 +212,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p2.MTVs = 1;
 	g->p2.MMONEYs = 1;
 	g->p3.playerID = UNI_C;
-	g->p3.ARCs = 2;
+	g->p3.ARCs = 0;
 	g->p3.campuses = 2;
 	g->p3.GO8s = 0;
 	g->p3.patents = 0;
@@ -228,8 +228,6 @@ Game newGame (int discipline[], int dice[]) {
 
 /// This frees the game when you're done. THIS IS IMPORTANT.
 void disposeGame (Game g) {
-	printf("OP\n");
-	printf("%p\n", g);
 	free(g);
 }
 
@@ -567,7 +565,6 @@ int getCampus(Game g, path pathToVertex) {
 
 	/// We firstly convert the path to a co-ordinate.
 	short ID = getCampusID(g, pathToVertex);
-
 	/// If we found a vertex, we return
 	if (ID != NOT_FOUND) {
 		whatCampus = g->campus[ID].type;
@@ -1782,19 +1779,19 @@ void initialiseVertices(Game g) {
 	g->campus[47].start.x = 7;
 	g->campus[47].start.y = 2;
 
-	g->campus[46].start.x = 1;
-	g->campus[46].start.y = 1;
-	g->campus[47].start.x = 2;
-	g->campus[47].start.y = 1;
-	g->campus[48].start.x = 4;
+	g->campus[48].start.x = 1;
 	g->campus[48].start.y = 1;
-	g->campus[49].start.x = 5;
+	g->campus[49].start.x = 2;
 	g->campus[49].start.y = 1;
+	g->campus[50].start.x = 4;
+	g->campus[50].start.y = 1;
+	g->campus[51].start.x = 5;
+	g->campus[51].start.y = 1;
 
-	g->campus[50].start.x = 2;
-	g->campus[50].start.y = 0;
-	g->campus[51].start.x = 3;
-	g->campus[51].start.y = 0;
+	g->campus[52].start.x = 2;
+	g->campus[52].start.y = 0;
+	g->campus[53].start.x = 3;
+	g->campus[53].start.y = 0;
 }
 
 void initialiseEdges(Game g) {
