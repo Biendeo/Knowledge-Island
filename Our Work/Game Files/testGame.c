@@ -35,12 +35,13 @@ int main(int argc, char *argv[]) {
 	printf("******************************\n");
 	
 	printf("\nTest freshly cooked on 18/05/15\n\n");
+	printf("If you see a line starting with **, then it's from this Game.c.\n");
 	
-	printf("Setting board values.\n");
+	printf("** Setting board values.\n");
 	int disciplines[19] = DEFAULT_DISCIPLINES;
 	int dice[19] = DEFAULT_DICE;
 	
-	printf("Initialising the game.\n");
+	printf("** Initialising the game.\n");
 	Game g = newGame(disciplines, dice);
 
 	printf("Testing board values.\n");
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]) {
 	assert (getDiceValue(g, 18) == 5);
 	
 	if (getTurnNumber(g) == -1) {
-		printf("Checking initial player values.\n");
+		printf("** Checking initial player values.\n");
 		assert (getKPIpoints(g, UNI_A) == 20);
 		assert (getKPIpoints(g, UNI_B) == 20);
 		assert (getKPIpoints(g, UNI_C) == 20);
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]) {
 		assert (getStudents(g, UNI_C, STUDENT_MTV) == 1);
 		assert (getStudents(g, UNI_C, STUDENT_MMONEY) == 1);
 
-		printf("Checking exchange rates.\n");
+		printf("** Checking exchange rates.\n");
 		assert (getExchangeRate(g, UNI_A, STUDENT_BPS, STUDENT_BQN) == 3);
 		assert (getExchangeRate(g, UNI_A, STUDENT_BQN, STUDENT_BPS) == 3);
 		assert (getExchangeRate(g, UNI_A, STUDENT_BPS, STUDENT_MJ) == 3);
@@ -179,11 +180,11 @@ int main(int argc, char *argv[]) {
 		assert (getExchangeRate(g, UNI_C, STUDENT_MTV, STUDENT_MMONEY) == 3);
 		assert (getExchangeRate(g, UNI_C, STUDENT_MMONEY, STUDENT_MTV) == 3);
 	} else {
-		printf("Your game didn't start at turn -1. We didn't assert this,\n");
-		printf("but you should fix this immediately.");
+		printf("** Your game didn't start at turn -1. We didn't assert this,\n");
+		printf("** but you should fix this immediately.");
 	}
 	
-	printf("Checking turn -1 actions.\n");
+	printf("** Checking turn -1 actions.\n");
 	action a;
 	a.actionCode = BUILD_CAMPUS;
 	strcpy(a.destination, "R");
@@ -205,10 +206,10 @@ int main(int argc, char *argv[]) {
 	a.actionCode = PASS;
 	assert (isLegalAction(g, a) == FALSE);
 	
-	printf("Simulating a diceroll (dice = 11).\n");
+	printf("** Simulating a diceroll (dice = 11).\n");
 	throwDice(g, 11);
 	
-	printf("Checking that P1 got another MTV and everything else is good.\n");
+	printf("** Checking that P1 got another MTV and everything else is good.\n");
 	assert (getWhoseTurn(g) == UNI_A);
 	assert (getStudents(g, UNI_A, STUDENT_THD) == 0);
 	assert (getStudents(g, UNI_A, STUDENT_BPS) == 3);
@@ -229,7 +230,7 @@ int main(int argc, char *argv[]) {
 	assert (getStudents(g, UNI_C, STUDENT_MTV) == 1);
 	assert (getStudents(g, UNI_C, STUDENT_MMONEY) == 1);
 	
-	printf("Building two ARCs for P1.\n");
+	printf("** Building two ARCs for P1.\n");
 	a.actionCode = OBTAIN_ARC;
 	strcpy(a.destination, "L");
 	assert (isLegalAction(g, a) == TRUE);
@@ -238,25 +239,25 @@ int main(int argc, char *argv[]) {
 	assert (isLegalAction(g, a) == TRUE);
 	makeAction(g, a);
 	
-	printf("Checking that you can't build off the board.\n");
+	printf("** Checking that you can't build off the board.\n");
 	strcpy(a.destination, "L");
 	assert (isLegalAction(g, a) == FALSE);
 	
-	printf("Checking P1's points.\n");
+	printf("** Checking P1's points.\n");
 	assert (getMostARCs(g) == UNI_A);
 	assert (getARCs(g, UNI_A) == 2);
 	assert (getKPIpoints(g, UNI_A) == 34);
 	
 	path testPath = {0};
 	testPath[0] = 'L';
-	printf("Checking the getARC function.\n");
+	printf("** Checking the getARC function.\n");
 	assert (getARC(g, testPath) == UNI_A);
 	testPath[0] = 'R';
 	assert (getARC(g, testPath) == VACANT_ARC);
 	
-	printf("Almost done, now to just dispose the game.\n");
+	printf("** Almost done, now to just dispose the game.\n");
 	disposeGame(g);
 	
-	printf("All tests passed, you are Awesome!\n");
+	printf("** All tests passed, you are Awesome!\n");
 	return EXIT_SUCCESS;
 }

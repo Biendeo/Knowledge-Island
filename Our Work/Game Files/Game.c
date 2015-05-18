@@ -148,6 +148,7 @@ Game newGame (int discipline[], int dice[]) {
 	printf("******************************\n");
 	
 	printf("\nGame freshly baked on 18/05/15\n\n");
+	printf("If you see a line starting with +, then it's from this Game.c.\n");
 	
 	// The program crashes for no reason unless I allocate 50000 more
 	// bytes of memory. I'll try to sort this out, but it's weird.
@@ -165,8 +166,6 @@ Game newGame (int discipline[], int dice[]) {
 		g->dice[pos] = dice[pos];
 		pos++;
 	}
-	
-	g->exchangeRate = 3;
 
 	/// Now we set all the building data.
 	/// All the data is initially "flushed".
@@ -351,8 +350,8 @@ void makeAction (Game g, action a) {
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		/// Since this action shouldn't be called beyond testing
 		/// conditions, we call the player out on this.
-		printf("** CHEATER ALERT: the player has made a publication.\n");
-		printf("** If this is not a test, then the AI is pulling a cheap move!\n");
+		printf("+ CHEATER ALERT: the player has made a publication.\n");
+		printf("+ If this is not a test, then the AI is pulling a cheap move!\n");
 		
 		// Are there any resoure costs to this?
 		if (g->whoseTurn == UNI_A) {
@@ -364,12 +363,12 @@ void makeAction (Game g, action a) {
 		}
 		
 		/// This will update whoever has the most papers.
-		getMostPapers(g);
+		getMostPublications(g);
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
 		/// Since this action shouldn't be called beyond testing
 		/// conditions, we call the player out on this.
-		printf("CHEATER ALERT: the player has made a publication.\n");
-		printf("If this is not a test, then the AI is pulling a cheap move!\n");
+		printf("+ CHEATER ALERT: the player has made a publication.\n");
+		printf("+ If this is not a test, then the AI is pulling a cheap move!\n");
 		
 		if (g->whoseTurn == UNI_A) {
 			g->p1.patents++;
@@ -843,8 +842,8 @@ int isLegalAction (Game g, action a) {
 	
 	/// If it's terra nullius, you can't make an action.
 	if (getTurnNumber(g) == -1) {
-		printf("It is currently terra nullius, so the action is invalid.\n");
-		printf("If you're not testing, then runGame.c didn't throw the dice.\n");
+		printf("+ It is currently terra nullius, so the action is invalid.\n");
+		printf("+ If you're not testing, then runGame.c didn't throw the dice.\n");
 		isLegalAction = FALSE;
 	}
 	return isLegalAction;
@@ -1336,11 +1335,12 @@ short validCampusPosition(Game g, int player, short ID) {
 	/// This stores how many directions we've tested. This should stop
 	/// at 6.
 	short iterations = 0;
+	short testID = NOT_FOUND;
 	
 	/// This stores the co-ordinate of where they want to go.
 	Coord givenStart;
-	givenStart.x = g->campuses[ID].start.x;
-	givenStart.y = g->campuses[ID].start.y;
+	givenStart.x = g->campus[ID].start.x;
+	givenStart.y = g->campus[ID].start.y;
 	
 	/// And this is the co-ordinate of the test. This will be one grid
 	/// space away from the given co-ordinate. The end of an ARC will
@@ -1387,15 +1387,15 @@ short validCampusPosition(Game g, int player, short ID) {
 		if (testID != NOT_FOUND) {
 			/// Otherwise, we check if that belongs to that player.
 			if (player == UNI_A) {
-				if (g->ARCs[testID].type == ARC_A) {
+				if (g->ARC[testID].type == ARC_A) {
 					isItValid = TRUE;
 				}
 			} else if (player == UNI_B) {
-				if (g->ARCs[testID].type == ARC_B) {
+				if (g->ARC[testID].type == ARC_B) {
 					isItValid = TRUE;
 				}
 			} else if (player == UNI_C) {
-				if (g->ARCs[testID].type == ARC_C) {
+				if (g->ARC[testID].type == ARC_C) {
 					isItValid = TRUE;
 				}
 			}
@@ -1427,7 +1427,7 @@ short validCampusPosition(Game g, int player, short ID) {
 				testEnd.y = givenStart.y - 1;
 			} else if (iterations == 4) {
 				/// This checks the 9 o'clock position.
-				testEnd.x = givenStart.x + 1;
+				testEnd.x = givenStart.x - 1;
 				testEnd.y = givenStart.y;
 			} else if (iterations == 5) {
 				/// This checks the 11 o'clock position.
@@ -1436,24 +1436,24 @@ short validCampusPosition(Game g, int player, short ID) {
 			}
 			
 			/// Then, we store that vertex's ID.
-			testID = findCampus(g, testEnd);
+			short testID = findCampus(g, testEnd);
 			
 			/// If that was an invalid vertex, then it doesn't bother.
 			if (testID != NOT_FOUND) {
 				/// Otherwise, we check if that belongs to that player.
 				if (player == UNI_A) {
-					if ((g->campuses[testID].type == CAMPUS_A) ||
-					    (g->campuses[testID].type == GO8_A)) {
+					if ((g->campus[testID].type == CAMPUS_A) ||
+					    (g->campus[testID].type == GO8_A)) {
 						isItValid = FALSE;
 					}
 				} else if (player == UNI_B) {
-					if ((g->campuses[testID].type == CAMPUS_B) ||
-					    (g->campuses[testID].type == GO8_B)) {
+					if ((g->campus[testID].type == CAMPUS_B) ||
+					    (g->campus[testID].type == GO8_B)) {
 						isItValid = FALSE;
 					}
 				} else if (player == UNI_C) {
-					if ((g->campuses[testID].type == CAMPUS_C) ||
-					    (g->campuses[testID].type == GO8_C)) {
+					if ((g->campus[testID].type == CAMPUS_C) ||
+					    (g->campus[testID].type == GO8_C)) {
 						isItValid = FALSE;
 					}
 				}
@@ -1476,14 +1476,15 @@ short validARCPosition(Game g, int player, short ID) {
 	/// This stores how many directions we've tested. This should stop
 	/// at 12.
 	short iterations = 0;
+	short testID = NOT_FOUND;
 	
 	/// This stores the co-ordinate of where they want to go.
 	Coord givenStart;
-	givenStart.x = g->campuses[ID].start.x;
-	givenStart.y = g->campuses[ID].start.y;
+	givenStart.x = g->ARC[ID].start.x;
+	givenStart.y = g->ARC[ID].start.y;
 	Coord givenEnd;
-	givenStart.x = g->campuses[ID].end.x;
-	givenStart.y = g->campuses[ID].end.y;
+	givenEnd.x = g->ARC[ID].end.x;
+	givenEnd.y = g->ARC[ID].end.y;
 	
 	/// And this is the co-ordinate of the test. This will be one grid
 	/// space away from the given co-ordinate. The end of an ARC will
@@ -1515,12 +1516,36 @@ short validARCPosition(Game g, int player, short ID) {
 			testEnd.y = givenStart.y - 1;
 		} else if (iterations == 4) {
 			/// This checks the 9 o'clock position.
-			testEnd.x = givenStart.x + 1;
+			testEnd.x = givenStart.x +- 1;
 			testEnd.y = givenStart.y;
 		} else if (iterations == 5) {
 			/// This checks the 11 o'clock position.
 			testEnd.x = givenStart.x;
 			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 6) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenEnd.x + 1;
+			testEnd.y = givenEnd.y + 1;
+		} else if (iterations == 7) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenEnd.x + 1;
+			testEnd.y = givenEnd.y;
+		} else if (iterations == 8) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenEnd.x;
+			testEnd.y = givenEnd.y - 1;
+		} else if (iterations == 9) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenEnd.x - 1;
+			testEnd.y = givenEnd.y - 1;
+		} else if (iterations == 10) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenEnd.x - 1;
+			testEnd.y = givenEnd.y;
+		} else if (iterations == 11) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenEnd.x;
+			testEnd.y = givenEnd.y + 1;
 		}
 		
 		/// Then, we store that edge's ID. We check 6 directions based
@@ -1535,23 +1560,25 @@ short validARCPosition(Game g, int player, short ID) {
 		if (testID != NOT_FOUND) {
 			/// Otherwise, we check if that belongs to that player.
 			if (player == UNI_A) {
-				if (g->ARCs[testID].type == ARC_A) {
+				if (g->ARC[testID].type == ARC_A) {
 					isItValid = TRUE;
 				}
 			} else if (player == UNI_B) {
-				if (g->ARCs[testID].type == ARC_B) {
+				if (g->ARC[testID].type == ARC_B) {
 					isItValid = TRUE;
 				}
 			} else if (player == UNI_C) {
-				if (g->ARCs[testID].type == ARC_C) {
+				if (g->ARC[testID].type == ARC_C) {
 					isItValid = TRUE;
 				}
 			}
 		}
+					printf("ID = %d, testID = %d\n", ID, testID);
 		
 		/// As a corner-case, we will end up counting the line itself,
 		/// so we have an exception case here.
-		if ((testEnd == givenEnd) || (testEnd == givenStart)) {
+		if (((testEnd.x == givenEnd.x) && (testEnd.y == givenEnd.y)) ||
+		    ((testEnd.y == givenStart.y) && (testEnd.y == givenStart.y))) {
 			isItValid = FALSE;
 		}
 		
