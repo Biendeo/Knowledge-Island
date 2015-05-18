@@ -140,19 +140,19 @@ void initialiseEdges(Game g);
 /// and then pass that into the initialise function.
 // MIGHT NEED TWEAKING
 Game newGame (int discipline[], int dice[]) {
-	printf("******************************\n");
-	printf("*            Game.c          *\n");
-	printf("*   By Vincent Tan, Pua Pao, *\n");
-	printf("*      Thomas Moffet, and    *\n");
-	printf("*       George Mountakis     *\n");
-	printf("******************************\n");
+	printf("++++++++++++++++++++++++++++++\n");
+	printf("+            Game.c          +\n");
+	printf("+   By Vincent Tan, Pua Pao, +\n");
+	printf("+      Thomas Moffet, and    +\n");
+	printf("+       George Mountakis     +\n");
+	printf("++++++++++++++++++++++++++++++\n");
 	
-	printf("\nGame freshly baked on 18/05/15\n\n");
-	printf("If you see a line starting with +, then it's from this Game.c.\n");
+	printf("\n+ Game freshly baked on 19/05/15\n\n");
+	printf("+ If you see a line starting with +, then it's from this Game.c.\n");
 	
-	// The program crashes for no reason unless I allocate 50000 more
+	// The program crashes for no reason unless I allocate 100000 more
 	// bytes of memory. I'll try to sort this out, but it's weird.
-	Game g = malloc(sizeof(Game));
+	Game g = malloc(sizeof(struct _game));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
 
@@ -347,6 +347,8 @@ void makeAction (Game g, action a) {
 				g->p3.papers++;
 			}
 		}
+		/// This will update whoever has the most papers.
+		getMostPublications(g);
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
 		/// Since this action shouldn't be called beyond testing
 		/// conditions, we call the player out on this.
@@ -1625,6 +1627,9 @@ void earnResources(Game g, int diceScore) {
 				// row at a time. The specs want it left to right,
 				// column at a time. This works, but it's just not
 				// ordered right.
+				// This can be simplified to getting the co-ord in the
+				// middle of a sector, and then checking all the
+				// vertices similar to findCampusPosition.
 				if (region == 7) {
 					if (regionCheck == 0) {
 						vertexID = 1;
@@ -1986,6 +1991,8 @@ void earnResources(Game g, int diceScore) {
 }
 
 void initialiseVertices(Game g) {
+	// Each vertex will be smooshed into one function, so you'll just
+	// see: setVertex(g, 0, 7, 10) for this first one for example.
 	/// These are arranged by rows.
 	g->campus[ 0].start.x = 7;
 	g->campus[ 0].start.y = 10;
@@ -2108,6 +2115,8 @@ void initialiseVertices(Game g) {
 }
 
 void initialiseEdges(Game g) {
+	// Each edge will be smooshed into one function, so you'll just see:
+	// setEdge(g, 0, 7, 10, 8, 10) for this first one for example.
 	/// These are arranged by rows.
 	/// Firstly, horizontal edges.
 	g->ARC[ 0].start.x = 7;
