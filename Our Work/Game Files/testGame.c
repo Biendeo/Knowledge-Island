@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	printf("*       George Mountakis     *\n");
 	printf("******************************\n");
 	
-	printf("\nTest freshly cooked on 16/05/15\n\n");
+	printf("\nTest freshly cooked on 18/05/15\n\n");
 	
 	printf("Setting board values.\n");
 	int disciplines[19] = DEFAULT_DISCIPLINES;
@@ -203,8 +203,7 @@ int main(int argc, char *argv[]) {
 	a.disciplineTo = STUDENT_BPS;
 	assert (isLegalAction(g, a) == FALSE);
 	a.actionCode = PASS;
-	printf("Checking that you can pass, even on turn -1.\n");
-	assert (isLegalAction(g, a) == TRUE);
+	assert (isLegalAction(g, a) == FALSE);
 	
 	printf("Simulating a diceroll (dice = 11).\n");
 	throwDice(g, 11);

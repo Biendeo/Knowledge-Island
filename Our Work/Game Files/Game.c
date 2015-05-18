@@ -146,11 +146,11 @@ Game newGame (int discipline[], int dice[]) {
 	printf("*       George Mountakis     *\n");
 	printf("******************************\n");
 	
-	printf("\nGame freshly baked on 16/05/15\n\n");
+	printf("\nGame freshly baked on 18/05/15\n\n");
 	
 	// The program crashes for no reason unless I allocate 50000 more
 	// bytes of memory. I'll try to sort this out, but it's weird.
-	Game g = malloc(sizeof(Game) + 50000);
+	Game g = malloc(sizeof(Game));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
 
@@ -791,8 +791,8 @@ int isLegalAction (Game g, action a) {
 		}
 	}
 	
-	/// If it's terra nullius, no turn is acted.
-	if ((getTurnNumber(g) == -1) && (a.actionCode != PASS)) {
+	/// If it's terra nullius, you can't make an action.
+	if (getTurnNumber(g) == -1) {
 		isLegalAction = FALSE;
 	}
 	return isLegalAction;
