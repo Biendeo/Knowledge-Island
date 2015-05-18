@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
 	makeAction(g, a);
 	
 	printf("** Checking that you can't build off the board.\n");
-	strcpy(a.destination, "L");
+	strcpy(a.destination, "LL");
 	assert (isLegalAction(g, a) == FALSE);
 	
 	printf("** Checking P1's points.\n");

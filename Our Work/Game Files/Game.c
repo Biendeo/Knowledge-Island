@@ -34,9 +34,9 @@
 
 #define NOT_FOUND -1
 
-#define LEFT 'L'
+#define LEFT  'L'
 #define RIGHT 'R'
-#define BACK 'B'
+#define BACK  'B'
 
 typedef struct _coordinate {
 	char x;
@@ -674,7 +674,6 @@ int getARC(Game g, path pathToEdge) {
 // you can assume that any pths passed in are NULL terminated strings.
 int isLegalAction (Game g, action a) {
 	int isLegalAction = FALSE;
-	
 	if (a.actionCode == PASS) {
 		isLegalAction = TRUE;
 	} else if (a.actionCode == BUILD_CAMPUS) {
@@ -1160,7 +1159,7 @@ Coord convertPath(path path) {
 	short direction = 2;
 	/// This tracks where we are in the path.
 	short pos = 0;
-
+	
 	/// When the path ends, we stop moving the co-ordinate.
 	while ((path[pos] == LEFT) || (path[pos] == RIGHT) ||
 	                              (path[pos] == BACK)) {
@@ -1305,22 +1304,19 @@ short findARC(Game g, Coord start, Coord end) {
 	/// values match that edge's. Then, it breaks and returns that ID.
 	/// It checks if either of the ends of an edge match
 	while ((pos < NUM_EDGES) && (ID == NOT_FOUND)) {
-		if ((start.x == g->ARC[pos].start.x) &&
-		    (start.y == g->ARC[pos].start.y)) {
-			if ((end.x == g->ARC[pos].end.x) &&
-		    (end.y == g->ARC[pos].end.y)) {
+		if (((start.x == g->ARC[pos].start.x) &&
+		     (start.y == g->ARC[pos].start.y) &&
+			 (end.x == g->ARC[pos].end.x) &&
+			 (end.y == g->ARC[pos].end.y)) ||
+			((start.x == g->ARC[pos].end.x) &&
+		     (start.y == g->ARC[pos].end.y) &&
+			 (end.x == g->ARC[pos].start.x) &&
+			 (end.y == g->ARC[pos].start.y))) {
 				ID = pos;
-			}
-		} else if ((start.x == g->ARC[pos].end.x) &&
-		           (start.y == g->ARC[pos].end.y)) {
-				if ((end.x == g->ARC[pos].start.x) &&
-		            (end.y == g->ARC[pos].start.y)) {
-					ID = pos;
-				}
 			}
 		pos++;
 	}
-
+	
 	return ID;
 }
 
@@ -1516,7 +1512,7 @@ short validARCPosition(Game g, int player, short ID) {
 			testEnd.y = givenStart.y - 1;
 		} else if (iterations == 4) {
 			/// This checks the 9 o'clock position.
-			testEnd.x = givenStart.x +- 1;
+			testEnd.x = givenStart.x - 1;
 			testEnd.y = givenStart.y;
 		} else if (iterations == 5) {
 			/// This checks the 11 o'clock position.
@@ -1573,12 +1569,11 @@ short validARCPosition(Game g, int player, short ID) {
 				}
 			}
 		}
-					printf("ID = %d, testID = %d\n", ID, testID);
 		
 		/// As a corner-case, we will end up counting the line itself,
 		/// so we have an exception case here.
 		if (((testEnd.x == givenEnd.x) && (testEnd.y == givenEnd.y)) ||
-		    ((testEnd.y == givenStart.y) && (testEnd.y == givenStart.y))) {
+		    ((testEnd.x == givenStart.x) && (testEnd.y == givenStart.y))) {
 			isItValid = FALSE;
 		}
 		
