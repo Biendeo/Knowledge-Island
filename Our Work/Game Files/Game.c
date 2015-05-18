@@ -1,10 +1,12 @@
 /*
 	WHAT NEEDS TO BE DONE:
-	makeAction();
-		Compute what the user has input, and do it.
-	throwDice();
-		We need to compute paths to buildings, and add resources based
-		on them.
+	validCampusPosition():
+		This needs to return true if the selected campus position is not
+		next to another campus or GO8, and it's on top of an ARC.
+	validARCPosition():
+		This needs to return true if the selected ARC position is next
+		to another ARC, or if it's next to a campus (this can be pretty
+		specific as it only is involved once).
 */
 
 // Thomas Moffet, thomasmoffet, z5061905
@@ -14,9 +16,6 @@
 
 /// This is the co-ordinate storage system. Refer to the co-ordinate
 /// diagram to determine where a co-ordinate is on the board.
-// Thomas: I will make a function that converts a path to a co-ord.
-// Since nothing returns a path, we can use this to store the location
-// of objects.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,10 +98,12 @@ typedef struct _game {
 	int discipline[NUM_REGIONS];
 	int dice[NUM_REGIONS];
 
-	/// This stores the exchange rate of resources. It should be stored
-	/// somewhere at least.
-	int exchangeRate;
-
+	/// This stores which player has the most ARCs and papers. When
+	/// checking who has the most, this updates. If it's a tie for who
+	/// has the most, this says who previously held it.
+	int mostARCs;
+	int mostPapers;
+	
 	/// This stores all the data of the possible buildings on the board.
 	// Thomas: Are we cool with sorting them like this? I think it'll be
 	// convenient for accessing either campuses or ARCs.
@@ -155,7 +156,9 @@ Game newGame (int discipline[], int dice[]) {
 	short pos = 0;
 
 	g->turnNumber = -1;
-	g->whoseTurn = 0;
+	g->whoseTurn = NO_ONE;
+	g->mostARCs = NO_ONE;
+	g->mostPapers = NO_ONE;
 
 	while (pos < 19) {
 		g->discipline[pos] = discipline[pos];
@@ -314,6 +317,8 @@ void makeAction (Game g, action a) {
 			g->p3.BQNs--;
 			g->p3.ARCs++;
 		}
+		/// This will update whoever has the most ARCs.
+		getMostARCs(g);
 	} else if (a.actionCode == START_SPINOFF) {
 		if (g->whoseTurn == UNI_A) {
 			g->p1.MJs--;
@@ -344,9 +349,35 @@ void makeAction (Game g, action a) {
 			}
 		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
-		// I dunno about this.
+		/// Since this action shouldn't be called beyond testing
+		/// conditions, we call the player out on this.
+		printf("** CHEATER ALERT: the player has made a publication.\n");
+		printf("** If this is not a test, then the AI is pulling a cheap move!\n");
+		
+		// Are there any resoure costs to this?
+		if (g->whoseTurn == UNI_A) {
+			g->p1.papers++;
+		} else if (g->whoseTurn == UNI_B) {
+			g->p2.papers++;
+		} else if (g->whoseTurn == UNI_C) {
+			g->p3.papers++;
+		}
+		
+		/// This will update whoever has the most papers.
+		getMostPapers(g);
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
-		// I dunno about this either.
+		/// Since this action shouldn't be called beyond testing
+		/// conditions, we call the player out on this.
+		printf("CHEATER ALERT: the player has made a publication.\n");
+		printf("If this is not a test, then the AI is pulling a cheap move!\n");
+		
+		if (g->whoseTurn == UNI_A) {
+			g->p1.patents++;
+		} else if (g->whoseTurn == UNI_B) {
+			g->p2.patents++;
+		} else if (g->whoseTurn == UNI_C) {
+			g->p3.patents++;
+		}
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
 		if (g->whoseTurn == UNI_A) {
 			if (a.disciplineFrom == STUDENT_BPS) {
@@ -490,34 +521,45 @@ int getDiceValue (Game g, int regionID) {
 
 /// This returns who has the most ARCs (I think).
 int getMostARCs (Game g) {
-	int returnPlayer = VACANT_ARC;
+	int returnPlayer = NO_ONE;
 	int p1ARCs = g->p1.ARCs;
 	int p2ARCs = g->p2.ARCs;
 	int p3ARCs = g->p3.ARCs;
 
 	if (p1ARCs > p2ARCs) {
-		returnPlayer = ARC_A;
+		returnPlayer = UNI_A;
 	} else if (p1ARCs < p2ARCs) {
-		returnPlayer = ARC_B;
+		returnPlayer = UNI_B;
 	}
 
-	if (returnPlayer == ARC_A) {
+	if (returnPlayer == UNI_A) {
 		if (p1ARCs > p3ARCs) {
-			returnPlayer = ARC_A;
+			returnPlayer = UNI_A;
 		} else if (p1ARCs < p3ARCs) {
-			returnPlayer = ARC_C;
+			returnPlayer = UNI_C;
 		} else {
-			returnPlayer = VACANT_ARC;
+			returnPlayer = NO_ONE;
 		}
 	} else {
 		if (p2ARCs > p3ARCs) {
-			returnPlayer = ARC_B;
+			returnPlayer = UNI_B;
 		} else if (p2ARCs < p3ARCs) {
-			returnPlayer = ARC_C;
+			returnPlayer = UNI_C;
 		} else {
-			returnPlayer = VACANT_ARC;
+			returnPlayer = NO_ONE;
 		}
 	}
+	
+	/// If this returns a clear winner, then we update who has the most.
+	/// If it's a tie, the old value is preserved.
+	if (returnPlayer == UNI_A) {
+		g->mostARCs = UNI_A;
+	} else if (returnPlayer == UNI_B) {
+		g->mostARCs = UNI_B;
+	} else if (returnPlayer == UNI_C) {
+		g->mostARCs = UNI_C;
+	}
+	// If it's a tie, do you return no one, or the previous best?
 
 	return returnPlayer;
 }
@@ -551,6 +593,14 @@ int getMostPublications (Game g) {
 		} else {
 			returnPlayer = VACANT_ARC;
 		}
+	}
+	
+	if (returnPlayer == UNI_A) {
+		g->mostPapers = UNI_A;
+	} else if (returnPlayer == UNI_B) {
+		g->mostPapers = UNI_B;
+	} else if (returnPlayer == UNI_C) {
+		g->mostPapers = UNI_C;
 	}
 
 	return returnPlayer;
@@ -718,9 +768,9 @@ int isLegalAction (Game g, action a) {
 			}
 		}
 	} else if (a.actionCode == OBTAIN_PUBLICATION) {
-		// I dunno about this.
+		isLegalAction = TRUE;
 	} else if (a.actionCode == OBTAIN_IP_PATENT) {
-		// I dunno about this either.
+		isLegalAction = TRUE;
 	} else if (a.actionCode == RETRAIN_STUDENTS) {
 		if (g->whoseTurn == UNI_A) {
 			if (a.disciplineFrom == STUDENT_BPS) {
@@ -793,6 +843,8 @@ int isLegalAction (Game g, action a) {
 	
 	/// If it's terra nullius, you can't make an action.
 	if (getTurnNumber(g) == -1) {
+		printf("It is currently terra nullius, so the action is invalid.\n");
+		printf("If you're not testing, then runGame.c didn't throw the dice.\n");
 		isLegalAction = FALSE;
 	}
 	return isLegalAction;
@@ -809,10 +861,10 @@ int getKPIpoints (Game g, int player) {
 		howManyKPIs += (g->p1.campuses * POINTS_PER_CAMPUS);
 		howManyKPIs += (g->p1.GO8s * POINTS_PER_GO8);
 		howManyKPIs += (g->p1.patents * POINTS_PER_PATENT);
-		if (getMostARCs(g) == UNI_A) {
+		if (g->mostARCs == UNI_A) {
 			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
-		if (getMostPublications(g) == UNI_A) {
+		if (g->mostPapers == UNI_A) {
 			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_B) {
@@ -820,10 +872,10 @@ int getKPIpoints (Game g, int player) {
 		howManyKPIs += (g->p2.campuses * POINTS_PER_CAMPUS);
 		howManyKPIs += (g->p2.GO8s * POINTS_PER_GO8);
 		howManyKPIs += (g->p2.patents * POINTS_PER_PATENT);
-		if (getMostARCs(g) == UNI_B) {
+		if (g->mostARCs == UNI_B) {
 			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
-		if (getMostPublications(g) == UNI_B) {
+		if (g->mostPapers == UNI_B) {
 			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	} else if (player == UNI_C) {
@@ -831,10 +883,10 @@ int getKPIpoints (Game g, int player) {
 		howManyKPIs += (g->p3.campuses * POINTS_PER_CAMPUS);
 		howManyKPIs += (g->p3.GO8s * POINTS_PER_GO8);
 		howManyKPIs += (g->p3.patents * POINTS_PER_PATENT);
-		if (getMostARCs(g) == UNI_C) {
+		if (g->mostARCs == UNI_C) {
 			howManyKPIs += POINTS_PER_MOSTARCS;
 		}
-		if (getMostPublications(g) == UNI_C) {
+		if (g->mostPapers == UNI_C) {
 			howManyKPIs += POINTS_PER_MOSTPAPERS;
 		}
 	}
@@ -1273,32 +1325,258 @@ short findARC(Game g, Coord start, Coord end) {
 	return ID;
 }
 
+/// This function checks if a specific player can build a campus or
+/// a GO8 based on what's around the given position. It does not take
+/// into count the user's resources, or what is already on that space.
+/// That's handled by the rest of isLegalAction.
 short validCampusPosition(Game g, int player, short ID) {
 	/// This stores whether their campus can actually be placed there.
-	// CHANGE TO FALSE WHEN DONE
-	short isItValid = TRUE;
+	short isItValid = FALSE;
+	
+	/// This stores how many directions we've tested. This should stop
+	/// at 6.
+	short iterations = 0;
+	
+	/// This stores the co-ordinate of where they want to go.
+	Coord givenStart;
+	givenStart.x = g->campuses[ID].start.x;
+	givenStart.y = g->campuses[ID].start.y;
+	
+	/// And this is the co-ordinate of the test. This will be one grid
+	/// space away from the given co-ordinate. The end of an ARC will
+	/// just use the given co-ordinate.
+	Coord testEnd;
+	
+	/// And this is the ID of the vertex we are testing.
 	
 	/// Firstly, we check to see if it's touching a friendly road.
-	/// We then mark it as valid for now, we'll recheck after.
-	if (ID == 0) {
+	/// If it is, it's valid.
+	
+	while ((iterations < 6) && (isItValid == FALSE)) {
+		/// First, we set what vertex we're checking.
+		if (iterations == 0) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 1) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 2) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 3) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenStart.x - 1;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 4) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 5) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y + 1;
+		}
 		
+		/// Then, we store that edge's ID.
+		testID = findARC(g, givenStart, testEnd);
+		
+		/// If that was an invalid edge, then it doesn't bother.
+		if (testID != NOT_FOUND) {
+			/// Otherwise, we check if that belongs to that player.
+			if (player == UNI_A) {
+				if (g->ARCs[testID].type == ARC_A) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_B) {
+				if (g->ARCs[testID].type == ARC_B) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_C) {
+				if (g->ARCs[testID].type == ARC_C) {
+					isItValid = TRUE;
+				}
+			}
+		}
+		iterations++;
 	}
 	
-	
+	/// If they're connected to a road, we have to double-check that
+	/// they're not directly next to another campus.
+	if (isItValid == TRUE) {
+	iterations = 0;
+		while ((iterations < 6) && (isItValid == TRUE)) {
+			/// First, we set what vertex we're checking.
+			if (iterations == 0) {
+				/// This checks the 1 o'clock position.
+				testEnd.x = givenStart.x + 1;
+				testEnd.y = givenStart.y + 1;
+			} else if (iterations == 1) {
+				/// This checks the 3 o'clock position.
+				testEnd.x = givenStart.x + 1;
+				testEnd.y = givenStart.y;
+			} else if (iterations == 2) {
+				/// This checks the 5 o'clock position.
+				testEnd.x = givenStart.x;
+				testEnd.y = givenStart.y - 1;
+			} else if (iterations == 3) {
+				/// This checks the 7 o'clock position.
+				testEnd.x = givenStart.x - 1;
+				testEnd.y = givenStart.y - 1;
+			} else if (iterations == 4) {
+				/// This checks the 9 o'clock position.
+				testEnd.x = givenStart.x + 1;
+				testEnd.y = givenStart.y;
+			} else if (iterations == 5) {
+				/// This checks the 11 o'clock position.
+				testEnd.x = givenStart.x;
+				testEnd.y = givenStart.y + 1;
+			}
+			
+			/// Then, we store that vertex's ID.
+			testID = findCampus(g, testEnd);
+			
+			/// If that was an invalid vertex, then it doesn't bother.
+			if (testID != NOT_FOUND) {
+				/// Otherwise, we check if that belongs to that player.
+				if (player == UNI_A) {
+					if ((g->campuses[testID].type == CAMPUS_A) ||
+					    (g->campuses[testID].type == GO8_A)) {
+						isItValid = FALSE;
+					}
+				} else if (player == UNI_B) {
+					if ((g->campuses[testID].type == CAMPUS_B) ||
+					    (g->campuses[testID].type == GO8_B)) {
+						isItValid = FALSE;
+					}
+				} else if (player == UNI_C) {
+					if ((g->campuses[testID].type == CAMPUS_C) ||
+					    (g->campuses[testID].type == GO8_C)) {
+						isItValid = FALSE;
+					}
+				}
+			}
+			iterations++;
+		}		
+	}
 	return isItValid;
 }
 
+/// This function checks if a specific player can build an ARC based on
+/// what's around the given position. It doesn't take into count the
+/// user's resources, or what is already on that space. That's handled
+/// by the rest of isLegalAction. It does have exceptions if the user
+/// has not yet built an ARC.
 short validARCPosition(Game g, int player, short ID) {
-	/// This stores whether their ARC can actually be placed there.
-	// CHANGE TO FALSE WHEN DONE
-	short isItValid = TRUE;
+	/// This stores whether their campus can actually be placed there.
+	short isItValid = FALSE;
+	
+	/// This stores how many directions we've tested. This should stop
+	/// at 12.
+	short iterations = 0;
+	
+	/// This stores the co-ordinate of where they want to go.
+	Coord givenStart;
+	givenStart.x = g->campuses[ID].start.x;
+	givenStart.y = g->campuses[ID].start.y;
+	Coord givenEnd;
+	givenStart.x = g->campuses[ID].end.x;
+	givenStart.y = g->campuses[ID].end.y;
+	
+	/// And this is the co-ordinate of the test. This will be one grid
+	/// space away from the given co-ordinate. The end of an ARC will
+	/// just use the given co-ordinate.
+	Coord testEnd;
+	
+	/// And this is the ID of the vertex we are testing.
 	
 	/// Firstly, we check to see if it's touching a friendly road.
-	/// We then mark it as valid for now, we'll recheck after.
-	if (ID == 0) {
+	/// If it is, it's valid.
+	
+	while ((iterations < 12) && (isItValid == FALSE)) {
+		/// First, we set what vertex we're checking.
+		if (iterations == 0) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 1) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 2) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 3) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenStart.x - 1;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 4) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 5) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y + 1;
+		}
 		
+		/// Then, we store that edge's ID. We check 6 directions based
+		/// on one vertex, then the other vertex.
+		if (iterations < 6) {
+			testID = findARC(g, givenStart, testEnd);
+		} else {
+			testID = findARC(g, givenEnd, testEnd);
+		}
+		
+		/// If that was an invalid edge, then it doesn't bother.
+		if (testID != NOT_FOUND) {
+			/// Otherwise, we check if that belongs to that player.
+			if (player == UNI_A) {
+				if (g->ARCs[testID].type == ARC_A) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_B) {
+				if (g->ARCs[testID].type == ARC_B) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_C) {
+				if (g->ARCs[testID].type == ARC_C) {
+					isItValid = TRUE;
+				}
+			}
+		}
+		
+		/// As a corner-case, we will end up counting the line itself,
+		/// so we have an exception case here.
+		if ((testEnd == givenEnd) || (testEnd == givenStart)) {
+			isItValid = FALSE;
+		}
+		
+		iterations++;
 	}
 	
+	/// Another corner-case, if the user has not built an ARC yet, they
+	/// wouldn't be able to put an ARC next to an existing one. So, we
+	/// just explicitly write some exceptions.
+	// TEST THE HECK OUT OF THESE BEFORE WE SUBMIT.
+	if (getARCs(g, player) == 0) {
+		if (player == UNI_A) {
+			if ((ID == 0) || (ID == 24) || (ID == 23) || (ID == 47)) {
+				isItValid = TRUE;
+			}
+		} else if (player == UNI_B) {
+			if ((ID == 27) || (ID == 54) || (ID == 44) || (ID == 65)) {
+				isItValid = TRUE;
+			}
+		} else if (player == UNI_C) {
+			if ((ID == 5) || (ID == 53) || (ID == 18) || (ID == 66)) {
+				isItValid = TRUE;
+			}
+		}
+	}
 	
 	return isItValid;
 }
