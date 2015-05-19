@@ -159,7 +159,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->mostARCs = NO_ONE;
 	g->mostPapers = NO_ONE;
 
-	while (pos < 19) {
+	while (pos < NUM_REGIONS) {
 		g->discipline[pos] = discipline[pos];
 		g->dice[pos] = dice[pos];
 		pos++;
@@ -208,7 +208,7 @@ Game newGame (int discipline[], int dice[]) {
 	g->p1.MJs = 1;
 	g->p1.MTVs = 1;
 	g->p1.MMONEYs = 1;
-	g->p2.playerID = UNI_A;
+	g->p2.playerID = UNI_B;
 	g->p2.ARCs = 0;
 	g->p2.campuses = 2;
 	g->p2.GO8s = 0;
