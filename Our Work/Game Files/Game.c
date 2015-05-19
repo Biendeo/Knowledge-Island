@@ -150,8 +150,6 @@ Game newGame (int discipline[], int dice[]) {
 	printf("\n+ Game freshly baked on 19/05/15\n\n");
 	printf("+ If you see a line starting with +, then it's from this Game.c.\n");
 	
-	// The program crashes for no reason unless I allocate 100000 more
-	// bytes of memory. I'll try to sort this out, but it's weird.
 	Game g = malloc(sizeof(struct _game));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
@@ -560,7 +558,6 @@ int getMostARCs (Game g) {
 	} else if (returnPlayer == UNI_C) {
 		g->mostARCs = UNI_C;
 	}
-	// If it's a tie, do you return no one, or the previous best?
 
 	return returnPlayer;
 }
