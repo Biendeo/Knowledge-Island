@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <time.h> /// For the random dice roll function.
 #include "Game.h"
+#include "mechanicalTurk.h"
 
 #define POINTS_TO_WIN 150
 
@@ -23,6 +24,9 @@
                 STUDENT_MMONEY, STUDENT_MTV, STUDENT_BQN, STUDENT_BPS }
 #define DEFAULT_DICE {9,10,8,12,6,5,3,11,3,11,4,6,4,7,9,2,8,10,5}
 
+int testGame();
+action decideAction (Game g);
+
 int playTurn(Game g);
 int checkWin(Game g);
 void printWinner(Game g, int hasWon);
@@ -31,6 +35,7 @@ int makeDiceValue(void);
 int main(int argc, char *argv[]) {
 	/// This just sets the random dice roll seed.
 	srand(time(NULL));
+	testGame();
 	
 	/// Firstly, the game loads the default map data, and then uses that
 	/// to initialise the game (g).
@@ -74,6 +79,7 @@ int main(int argc, char *argv[]) {
 		if (gHasWon == FALSE) {
 			gDiceScore = makeDiceValue();
 			throwDice(g, gDiceScore);
+			printf("\nIt is turn #%d, player %d's turn. They rolled a %d.\n", getTurnNumber(g), getWhoseTurn(g), gDiceScore);
 			playTurn(g);
 		}
 		gHasWon = checkWin(g);
@@ -92,52 +98,9 @@ int playTurn(Game g) {
 	/// The action is created. The action is given a value so that it
 	/// doesn't accidentally skip the user's turn.
 	action a;
-	short pathpos = 0;
-	char bufferChar = 0;
 	
 	while (a.actionCode != PASS) {
-		/// These reset the action for every turn.
-		a.actionCode = -1;
-		pathpos = 0;
-		while (pathpos < PATH_LIMIT) {
-			a.destination[pathpos] = 0;
-			pathpos++;
-		}
-		pathpos = 0;
-		a.disciplineFrom = -1;
-		a.disciplineTo = -1;
-		
-		pathpos = 0;
-		printf("Input an action code: ");
-		scanf("%d", &a.actionCode);
-		
-		if ((a.actionCode == BUILD_CAMPUS) ||
-		    (a.actionCode == BUILD_GO8) || 
-		    (a.actionCode == OBTAIN_ARC)) {
-			printf("Type a path using L, R, and B.\n");
-			getchar();
-			bufferChar = LEFT;
-			
-			while ((bufferChar == LEFT) ||
-			       (bufferChar == RIGHT) ||
-			       (bufferChar == BACK)) {
-				bufferChar = getchar();
-				a.destination[pathpos] = bufferChar;
-				pathpos++;
-			}
-		}
-		
-		// What is OBTAIN_PUBICATION and OBTAIN_IP_PATENT?
-		
-		if (a.actionCode == RETRAIN_STUDENTS) {
-			printf("What students are you converting from? ");
-			scanf("%d", &a.disciplineFrom);
-			printf("And to? ");
-			scanf("%d", &a.disciplineTo);
-		}
-		
-		/// Firstly, a blanket check to see if what they're doing is
-		/// valid, then perform the action.
+		a = decideAction(g);
 		if (isLegalAction(g, a) == TRUE) {
 			makeAction(g, a);
 		} else {
@@ -158,6 +121,15 @@ int checkWin(Game g) {
 		hasWon = UNI_B;
 	} else if (getKPIpoints(g, UNI_C) >= POINTS_TO_WIN) {
 		hasWon = UNI_C;
+	}
+	
+	if (getTurnNumber(g) >= 9000) {
+		printf("We hit turn 9000, so the game would end.\n");
+		printf("P1 had %d KPIs.\n", getKPIpoints(g, UNI_A));
+		printf("P2 had %d KPIs.\n", getKPIpoints(g, UNI_B));
+		printf("P3 had %d KPIs.\n", getKPIpoints(g, UNI_C));
+		
+		hasWon = UNI_A;
 	}
 	
 	return hasWon;
