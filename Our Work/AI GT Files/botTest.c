@@ -124,6 +124,7 @@ int checkWin(Game g) {
 	}
 	
 	if (getTurnNumber(g) >= 9000) {
+		printf("We hit turn 9000, so the game would end.\n");
 		printf("P1 had %d KPIs.\n", getKPIpoints(g, UNI_A));
 		printf("P2 had %d KPIs.\n", getKPIpoints(g, UNI_B));
 		printf("P3 had %d KPIs.\n", getKPIpoints(g, UNI_C));
