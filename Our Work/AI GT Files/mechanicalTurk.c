@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "Game.h"
 #include "mechanicalTurk.h"
@@ -105,16 +106,19 @@ typedef struct _data {
 } * Data;
 
 Data readGameData(Game g);
-path *convertVertex(path path, Coord start);
-path *convertEdge(path path, Coord start, Coord end);
+path *convertVertex(Data d, path *destination, Coord start);
+path *convertEdge(Data d, path *destination, Coord start, Coord end);
+short searchForCampus(Data d, Coord coord);
 void readInitialiseVertices(Data d);
 void readInitialiseEdges(Data d);
 
 action decideAction (Game g) {
 	action nextAction;
 	
+	/// Firstly, the bot reads in all the data of the board.
 	Data d = readGameData(g);
 	
+	/// It then stores what values are its own from here.
 	short iAmPlayer = d->whoseTurn;
 	short myTHDs = 0;
 	short myBPSs = 0;
@@ -144,7 +148,10 @@ action decideAction (Game g) {
 		myMTVs = d->p3.MTVs;
 		myMMONEYs = d->p3.MMONEYs;
 	}
-
+	
+	/// Then it makes its action.
+	/// Right now, the AI will make a spin-off if it has the resources
+	/// to, and a pass if it doesn't.
 	if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
 		nextAction.actionCode = START_SPINOFF;
 	} else {
@@ -152,6 +159,16 @@ action decideAction (Game g) {
 	}
 
 	printf("Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
+	
+	/*// This tests the pathing function right now. It crashes though.
+	path *destination = malloc (sizeof(path));
+	Coord testCoord;
+	testCoord.x = 7;
+	testCoord.y = 5;
+	destination = convertVertex(d, destination, testCoord);
+	printf("%s", destination);
+	free(destination);
+	*/
 	
 	free(d);
 	
@@ -230,6 +247,287 @@ Data readGameData(Game g) {
 	return d;
 }
 
+/// This function converts a co-ordinate into a path.
+path *convertVertex(Data d, path *destination, Coord start) {
+	/// This co-ordinate tracks where on the board the path is up to.
+	/// It starts where all paths start.
+	Coord currentCoord;
+	currentCoord.x = 7;
+	currentCoord.y = 10;
+	
+	/// This co-ordinate is used for testing if the path has gone off
+	/// the board.
+	Coord testCoord;
+	testCoord.x = currentCoord.x;
+	testCoord.y = currentCoord.y;
+	
+	/// This stores which direction the path is going (think of it as
+	/// (2n+1) o'clock). It starts in the 5 o'clock direction.
+	short direction = 2;
+	
+	/// This stores the next direction the path will go.
+	char nextPathItem = 0;
+	char *nextPathItemPtr = &nextPathItem;
+	
+	short pos = 0;
+	// Anyone doing MATH1081 would see this De Morgan's law right here. :)
+	while (((currentCoord.x != start.x) || (currentCoord.y != start.y)) && (pos < PATH_LIMIT)) {
+		/// The AI basically determines if it needs to go left or right
+		/// depending on which direction it is going, and if it is to
+		/// the left, right, above, or below the destination.
+		
+		testCoord.x = currentCoord.x;
+		testCoord.y = currentCoord.y;
+		
+		if (direction == 0) {
+			if (testCoord.x > start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = LEFT;
+			}
+			// You can change a variable in the middle of an if/else
+			// section and not trigger anything else. :)
+			if (nextPathItem == LEFT) {
+				testCoord.y++;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.x++;
+			}
+		} else if (direction == 1) {
+			if (testCoord.x > start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = LEFT;
+			}
+			
+			if (nextPathItem == LEFT) {
+				testCoord.x++;
+				testCoord.y++;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.y--;
+			}
+		} else if (direction == 2) {
+			if (testCoord.x > start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = LEFT;
+			}
+			
+			if (nextPathItem == LEFT) {
+				testCoord.x++;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.x--;
+				testCoord.y--;
+			}
+		} else if (direction == 3) {
+			if (testCoord.x > start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = RIGHT;
+			}
+			
+			if (nextPathItem == LEFT) {
+				testCoord.y--;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.x--;
+			}
+		} else if (direction == 4) {
+			if (testCoord.x > start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = RIGHT;
+			}
+			
+			if (nextPathItem == LEFT) {
+				testCoord.x--;
+				testCoord.y--;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.y++;
+			}
+		} else if (direction == 5) {
+			if (testCoord.x > start.x) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.y > start.y) {
+				nextPathItem = LEFT;
+			}
+			if (testCoord.x < start.x) {
+				nextPathItem = RIGHT;
+			}
+			if (testCoord.y < start.y) {
+				nextPathItem = RIGHT;
+			}
+			
+			if (nextPathItem == LEFT) {
+				testCoord.x--;
+			} else if (nextPathItem == RIGHT) {
+				testCoord.x++;
+				testCoord.y++;
+			}
+		}
+		
+		/// Then, if that direction leads off the board, then it'll
+		/// just choose the other direction, and move everything there.
+		// Basically copy-paste searchForCampus() in later.
+		if (searchForCampus(d, testCoord) == NOT_FOUND) {
+			if (nextPathItem == LEFT) {
+				if (direction == 0) {
+					direction = 1;
+					currentCoord.x++;
+				} else if (direction == 1) {
+					direction = 2;
+					currentCoord.y--;
+				} else if (direction == 2) {
+					direction = 3;
+					currentCoord.x--;
+					currentCoord.y--;
+				} else if (direction == 3) {
+					direction = 4;
+					currentCoord.x--;
+				} else if (direction == 4) {
+					direction = 5;
+					currentCoord.y++;
+				} else if (direction == 5) {
+					direction = 0;
+					currentCoord.x++;
+					currentCoord.y++;
+				}
+				nextPathItem = RIGHT;
+			} else if (nextPathItem == RIGHT) {
+				if (direction == 0) {
+					direction = 5;
+					currentCoord.y++;
+				} else if (direction == 1) {
+					direction = 0;
+					currentCoord.x++;
+					currentCoord.y++;
+				} else if (direction == 2) {
+					direction = 1;
+					currentCoord.x++;
+				} else if (direction == 3) {
+					direction = 2;
+					currentCoord.y--;
+				} else if (direction == 4) {
+					direction = 3;
+					currentCoord.x--;
+					currentCoord.y--;
+				} else if (direction == 5) {
+					direction = 4;
+					currentCoord.x--;
+				}
+				nextPathItem = LEFT;
+			}
+		} else {
+			if (nextPathItem == LEFT) {
+				if (direction == 0) {
+					direction = 5;
+					currentCoord.y++;
+				} else if (direction == 1) {
+					direction = 0;
+					currentCoord.x++;
+					currentCoord.y++;
+				} else if (direction == 2) {
+					direction = 1;
+					currentCoord.x++;
+				} else if (direction == 3) {
+					direction = 2;
+					currentCoord.y--;
+				} else if (direction == 4) {
+					direction = 3;
+					currentCoord.x--;
+					currentCoord.y--;
+				} else if (direction == 5) {
+					direction = 4;
+					currentCoord.x--;
+				}
+			} else if (nextPathItem == RIGHT) {
+				if (direction == 0) {
+					direction = 1;
+					currentCoord.x++;
+				} else if (direction == 1) {
+					direction = 2;
+					currentCoord.y--;
+				} else if (direction == 2) {
+					direction = 3;
+					currentCoord.x--;
+					currentCoord.y--;
+				} else if (direction == 3) {
+					direction = 4;
+					currentCoord.x--;
+				} else if (direction == 4) {
+					direction = 5;
+					currentCoord.y++;
+				} else if (direction == 5) {
+					direction = 0;
+					currentCoord.x++;
+					currentCoord.y++;
+				}
+			}
+		}
+		
+		memcpy(destination[pos], nextPathItemPtr, sizeof(char));
+		pos++;
+	}
+	return destination;
+}
+
+path *convertEdge(Data d, path *destination, Coord start, Coord end) {
+	return destination;
+}
+
+/// This function compares a coordinate with the campuses stored in
+/// memory, and returns the array position of the matching one, or
+/// NOT_FOUND if no match was found.
+short searchForCampus(Data d, Coord coord) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+
+	/// Every vertex is checked until the given co-ordinate's x and y
+	/// values match that vertex's. Then, it breaks and returns that ID.
+	while ((pos < NUM_VERTICES) && (ID == NOT_FOUND)) {
+		if ((coord.x == d->campus[pos].start.x) &&
+		    (coord.y == d->campus[pos].start.y)) {
+			ID = pos;
+		}
+		pos++;
+	}
+
+	return ID;
+}
 
 void readInitialiseVertices(Data d) {
 	// Each vertex will be smooshed into one function, so you'll just
