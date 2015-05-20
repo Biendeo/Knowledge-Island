@@ -149,27 +149,40 @@ action decideAction (Game g) {
 		myMMONEYs = d->p3.MMONEYs;
 	}
 	
+	// This tests the pathing function right now.
+	// I know this is the wrong size, I'm just using it for test right now.
+	// Right now, the destination will calculate how to get to co-ord (7, 5).
+	// When it's implemented, just use that last line (changing vertex for campus)
+	// if necessary. It will become part of the action near the end.
+	path *destination = malloc (10000);
+	Coord testCoord;
+	testCoord.x = d->campus[28].start.x;
+	testCoord.y = d->campus[28].start.y;
+	destination = convertVertex(d, destination, testCoord);
+	
 	/// Then it makes its action.
 	/// Right now, the AI will make a spin-off if it has the resources
 	/// to, and a pass if it doesn't.
 	if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
 		nextAction.actionCode = START_SPINOFF;
+		nextAction.disciplineFrom = 0;
+		nextAction.disciplineTo = 0;
 	} else {
 		nextAction.actionCode = PASS;
+		nextAction.disciplineFrom = 0;
+		nextAction.disciplineTo = 0;
+	}
+	
+	/// Now we copy the destination to the action's destination.
+	short pos = 0;
+	while ((*destination[pos] == LEFT) || (*destination[pos] == RIGHT) || (*destination[pos] == BACK)) {
+		nextAction.destination[pos] = *destination[pos];
+		pos++;
 	}
 
 	printf("Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
 	
-	/*// This tests the pathing function right now. It crashes though.
-	path *destination = malloc (sizeof(path));
-	Coord testCoord;
-	testCoord.x = 7;
-	testCoord.y = 5;
-	destination = convertVertex(d, destination, testCoord);
-	printf("%s", destination);
 	free(destination);
-	*/
-	
 	free(d);
 	
 	return nextAction;
@@ -499,6 +512,7 @@ path *convertVertex(Data d, path *destination, Coord start) {
 			}
 		}
 		
+		// Should we be using memcpy, or is it not allowed?
 		memcpy(destination[pos], nextPathItemPtr, sizeof(char));
 		pos++;
 	}
@@ -506,6 +520,47 @@ path *convertVertex(Data d, path *destination, Coord start) {
 }
 
 path *convertEdge(Data d, path *destination, Coord start, Coord end) {
+	/// Firstly, a path to one side of the edge is determined.
+	destination = convertVertex(d, destination, start);
+	
+	/// Then,we determine the last direction they went in.
+	char direction = 2;
+	short pos = 0;
+	while ((*destination[pos] == LEFT) || (*destination[pos] == RIGHT)) {
+		if (*destination[pos] == LEFT) {
+			direction--;
+		} else if (*destination[pos] == RIGHT) {
+			direction++;
+		}
+		
+		pos++;
+	}
+	
+	/// Then we determine which direction is the next point.
+	char nextDirection = 0;
+	if ((start.x == (end.x + 1)) && (start.y == (end.y + 1))) {
+		nextDirection = 0;
+	} else if ((start.x == (end.x + 1)) && (start.y == end.y)) {
+		nextDirection = 1;
+	}	if ((start.x == end.x) && (start.y == (end.y - 1))) {
+		nextDirection = 2;
+	}	if ((start.x == (end.x - 1)) && (start.y == (end.y - 1))) {
+		nextDirection = 3;
+	}	if ((start.x == (end.x - 1)) && (start.y == end.y)) {
+		nextDirection = 4;
+	}	if ((start.x == end.x) && (start.y == (end.y + 1))) {
+		nextDirection = 5;
+	}
+	
+	/// Then we determine which direction the path needs to go to get there.
+	if (((nextDirection - direction) == -2) || ((nextDirection - direction) == 4)) {
+		*destination[pos] = LEFT;
+	} else if (((nextDirection - direction) == 2) || ((nextDirection - direction) == -4)) {
+		*destination[pos] = RIGHT;
+	} else {
+		*destination[pos] = BACK;
+	}
+	
 	return destination;
 }
 
