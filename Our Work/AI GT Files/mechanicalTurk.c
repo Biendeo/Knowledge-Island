@@ -39,6 +39,9 @@ typedef struct _coordinate {
 typedef struct _player {
 	/// This stores the ID of the player.
 	int playerID;
+	
+	/// This stores the KPI points of each player.
+	int KPIs;
 
 	/// This counts how many of each building they have. This will
 	/// allow us to easily calculate their score, and use other
@@ -120,6 +123,7 @@ action decideAction (Game g) {
 	
 	/// It then stores what values are its own from here.
 	short iAmPlayer = d->whoseTurn;
+	short myKPIs = 0;
 	short myTHDs = 0;
 	short myBPSs = 0;
 	short myBQNs = 0;
@@ -127,6 +131,7 @@ action decideAction (Game g) {
 	short myMTVs = 0;
 	short myMMONEYs = 0;
 	if (iAmPlayer == UNI_A) {
+		myKPIs = d->p1.KPIs;
 		myTHDs = d->p1.THDs;
 		myBPSs = d->p1.BPSs;
 		myBQNs = d->p1.BQNs;
@@ -134,6 +139,7 @@ action decideAction (Game g) {
 		myMTVs = d->p1.MTVs;
 		myMMONEYs = d->p1.MMONEYs;
 	} else if (iAmPlayer == UNI_B) {
+		myKPIs = d->p2.KPIs;
 		myTHDs = d->p2.THDs;
 		myBPSs = d->p2.BPSs;
 		myBQNs = d->p2.BQNs;
@@ -141,6 +147,7 @@ action decideAction (Game g) {
 		myMTVs = d->p2.MTVs;
 		myMMONEYs = d->p2.MMONEYs;
 	} else if (iAmPlayer == UNI_C) {
+		myKPIs = d->p3.KPIs;
 		myTHDs = d->p3.THDs;
 		myBPSs = d->p3.BPSs;
 		myBQNs = d->p3.BQNs;
@@ -220,6 +227,7 @@ Data readGameData(Game g) {
 	
 	/// Now the player data.
 	d->p1.playerID = UNI_A;
+	d->p1.KPIs = getKPIpoints(g, UNI_A);
 	d->p1.ARCs = getARCs(g, UNI_A);
 	d->p1.campuses = getCampuses(g, UNI_A);
 	d->p1.GO8s = getGO8s(g, UNI_A);
@@ -233,6 +241,7 @@ Data readGameData(Game g) {
 	d->p1.MMONEYs = getStudents(g, UNI_A, STUDENT_MMONEY);
 	
 	d->p2.playerID = UNI_B;
+	d->p2.KPIs = getKPIpoints(g, UNI_B);
 	d->p2.ARCs = getARCs(g, UNI_B);
 	d->p2.campuses = getCampuses(g, UNI_B);
 	d->p2.GO8s = getGO8s(g, UNI_B);
@@ -246,6 +255,7 @@ Data readGameData(Game g) {
 	d->p2.MMONEYs = getStudents(g, UNI_B, STUDENT_MMONEY);
 	
 	d->p3.playerID = UNI_C;
+	d->p3.KPIs = getKPIpoints(g, UNI_C);
 	d->p3.ARCs = getARCs(g, UNI_C);
 	d->p3.campuses = getCampuses(g, UNI_C);
 	d->p3.GO8s = getGO8s(g, UNI_C);
