@@ -267,13 +267,22 @@ Data readGameData(Game g) {
 	readInitialiseEdges(d);
 	
 	pos = 0;
+	path destination = {0};
+	Coord start;
+	Coord end;
 	while (pos < NUM_EDGES) {
 		if (pos < NUM_VERTICES) {
-			// When convertVertex is done, replace this.
-			d->campus[pos].type = 0;
+			start.x = d->campus[pos].start.x;
+			start.y = d->campus[pos].start.y;
+			convertVertex(d, destination, start);
+			d->campus[pos].type = getCampus(g, destination);
 		}
-		// When convertEdge is done, replace this.
-		d->ARC[pos].type = 0;
+		start.x = d->ARC[pos].start.x;
+		start.y = d->ARC[pos].start.y;
+		end.x = d->ARC[pos].end.x;
+		end.y = d->ARC[pos].end.y;
+		convertEdge(d, destination, start, end);
+		d->ARC[pos].type = getARC(g, destination);
 		pos++;
 	}
 	
