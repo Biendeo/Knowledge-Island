@@ -16,12 +16,7 @@
 #define NUM_EDGES 72
 #define NUM_VERTICES 54
 
-#define POINTS_PER_ARC 2
-#define POINTS_PER_CAMPUS 10
-#define POINTS_PER_GO8 20
-#define POINTS_PER_PATENT 10
-#define POINTS_PER_MOSTARCS 10
-#define POINTS_PER_MOSTPAPERS 10
+#define PERFORM_SPINOFF 1
 
 #define NOT_FOUND -1
 
@@ -156,24 +151,76 @@ action decideAction (Game g) {
 		myMMONEYs = d->p3.MMONEYs;
 	}
 	
+	/// These store the amount of students that can be converted from
+	/// each type of student. This can be used as quick reference to
+	/// determine if the player can convert a number of students.
+	short convertibleBPSs = myBPSs / (getExchangeRate(g, iAmPlayer, STUDENT_BPS, STUDENT_BPS));
+	short convertibleBQNs = myBQNs / (getExchangeRate(g, iAmPlayer, STUDENT_BQN, STUDENT_BPS));
+	short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
+	short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
+	short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
+	
+	short whatDoIWantToDo = 0;
+	
 	// This tests the pathing function right now.
 	// I know this is the wrong size, I'm just using it for test right now.
 	// Right now, the destination will calculate how to get to co-ord (7, 5).
 	// When it's implemented, just use that last line (changing vertex for campus)
 	// if necessary. It will become part of the action near the end.
-	path *destination = malloc (10000);
-	Coord testCoord;
-	testCoord.x = d->campus[28].start.x;
-	testCoord.y = d->campus[28].start.y;
-	destination = convertVertex(d, destination, testCoord);
+	path destination = {0};
+	// Coord testCoord;
+	// testCoord.x = d->campus[26].start.x;
+	// testCoord.y = d->campus[26].start.y;
+	// convertVertex(d, &destination, testCoord);
+	
+	/// This determines what the AI wants to accomplish.
+	// Right now, it just wants to perform a spinoff.
+	
+	whatDoIWantToDo = PERFORM_SPINOFF;
 	
 	/// Then it makes its action.
 	/// Right now, the AI will make a spin-off if it has the resources
 	/// to, and a pass if it doesn't.
-	if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
-		nextAction.actionCode = START_SPINOFF;
-		nextAction.disciplineFrom = 0;
-		nextAction.disciplineTo = 0;
+	
+	if (whatDoIWantToDo == PERFORM_SPINOFF) {
+		/// This stores what resources all already at the necessary
+		/// amounts to perform this action.
+		short shortMJs = 0;
+		if (myMJs >= 1) {
+			shortMJs = 1;
+		}
+		short shortMTVs = 0;
+		if (myMTVs >= 1) {
+			shortMTVs = 1;
+		}
+		short shortMMONEYs = 0;
+		if (myMMONEYs >= 1) {
+			shortMMONEYs = 1;
+		}
+		if ((convertibleBPSs + convertibleBQNs) >= (3 - (shortMJs + shortMTVs, + shortMMONEYs))) {
+			nextAction.actionCode = RETRAIN_STUDENTS;
+			if (convertibleBPSs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BPS;
+			} else if (convertibleBQNs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BQN;
+			}
+			
+			if (myMJs < 1) {
+				nextAction.disciplineTo = STUDENT_MJ;
+			} else if (myMTVs < 1) {
+				nextAction.disciplineTo = STUDENT_MTV;
+			} else if (myMMONEYs < 1) {
+				nextAction.disciplineTo = STUDENT_MMONEY;
+			}
+		} else if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
+			nextAction.actionCode = START_SPINOFF;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		} else {
+			nextAction.actionCode = PASS;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		}
 	} else {
 		nextAction.actionCode = PASS;
 		nextAction.disciplineFrom = 0;
@@ -182,14 +229,19 @@ action decideAction (Game g) {
 	
 	/// Now we copy the destination to the action's destination.
 	short pos = 0;
-	while ((*destination[pos] == LEFT) || (*destination[pos] == RIGHT) || (*destination[pos] == BACK)) {
-		nextAction.destination[pos] = *destination[pos];
-		pos++;
+	strncpy(&nextAction.destination, &destination, PATH_LIMIT - 1);
+	
+	/// As a final check, we check if that move is valid in terms of
+	/// Game.c. Otherwise, we save ourselves the trouble, and just
+	/// pass.
+	if (isLegalAction(g, nextAction) == FALSE) {
+		nextAction.actionCode = PASS;
+		nextAction.disciplineFrom = 0;
+		nextAction.disciplineTo = 0;
 	}
 
 	printf("Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
 	
-	free(destination);
 	free(d);
 	
 	return nextAction;
