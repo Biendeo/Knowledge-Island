@@ -21,14 +21,14 @@ action decideAction (Game g) {
 	int TVtoQN = getExchangeRate(g, amPlayer, MTV, BQN);
 	int MONtoPS = getExchangeRate(g, amPlayer, MTV, BPS);
 	int MONtoQN = getExchangeRate(g, amPlayer, MTV, BQN);
-   int freeARC = getARC(Game g, path pathToEdge);
-   int move = isLegalAction(Game g, action a);
+   	int freeARC = getARC(Game g, path pathToEdge);
+	int move = isLegalAction(Game g, action a);
 	
 	
 	if ((BPS >= 1) && (BQN >= 1) {
-      if ((freeARC == VACANT_ARC) && (ID != NOT_FOUND)){ 
-		   nextAction.actionCode = OBTAIN_ARC;
-      }
+          if ((freeARC == VACANT_ARC) && (ID != NOT_FOUND)){ 
+		nextAction.actionCode = OBTAIN_ARC;
+      		}
 		//needs to use data from coordinates
 		path destination
 	} else if ((BPS == 0) && (MJ >=JtoPS) || (MTV >= TVtoPS) || (MMONEY >=MONtoPS)) {
