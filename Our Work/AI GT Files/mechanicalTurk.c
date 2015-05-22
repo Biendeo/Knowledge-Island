@@ -16,12 +16,7 @@
 #define NUM_EDGES 72
 #define NUM_VERTICES 54
 
-#define POINTS_PER_ARC 2
-#define POINTS_PER_CAMPUS 10
-#define POINTS_PER_GO8 20
-#define POINTS_PER_PATENT 10
-#define POINTS_PER_MOSTARCS 10
-#define POINTS_PER_MOSTPAPERS 10
+#define PERFORM_SPINOFF 1
 
 #define NOT_FOUND -1
 
@@ -39,6 +34,9 @@ typedef struct _coordinate {
 typedef struct _player {
 	/// This stores the ID of the player.
 	int playerID;
+	
+	/// This stores the KPI points of each player.
+	int KPIs;
 
 	/// This counts how many of each building they have. This will
 	/// allow us to easily calculate their score, and use other
@@ -106,8 +104,8 @@ typedef struct _data {
 } * Data;
 
 Data readGameData(Game g);
-path *convertVertex(Data d, path *destination, Coord start);
-path *convertEdge(Data d, path *destination, Coord start, Coord end);
+void convertVertex(Data d, path destination, Coord start);
+void convertEdge(Data d, path destination, Coord start, Coord end);
 short searchForCampus(Data d, Coord coord);
 void readInitialiseVertices(Data d);
 void readInitialiseEdges(Data d);
@@ -120,6 +118,7 @@ action decideAction (Game g) {
 	
 	/// It then stores what values are its own from here.
 	short iAmPlayer = d->whoseTurn;
+	short myKPIs = 0;
 	short myTHDs = 0;
 	short myBPSs = 0;
 	short myBQNs = 0;
@@ -127,6 +126,7 @@ action decideAction (Game g) {
 	short myMTVs = 0;
 	short myMMONEYs = 0;
 	if (iAmPlayer == UNI_A) {
+		myKPIs = d->p1.KPIs;
 		myTHDs = d->p1.THDs;
 		myBPSs = d->p1.BPSs;
 		myBQNs = d->p1.BQNs;
@@ -134,6 +134,7 @@ action decideAction (Game g) {
 		myMTVs = d->p1.MTVs;
 		myMMONEYs = d->p1.MMONEYs;
 	} else if (iAmPlayer == UNI_B) {
+		myKPIs = d->p2.KPIs;
 		myTHDs = d->p2.THDs;
 		myBPSs = d->p2.BPSs;
 		myBQNs = d->p2.BQNs;
@@ -141,6 +142,7 @@ action decideAction (Game g) {
 		myMTVs = d->p2.MTVs;
 		myMMONEYs = d->p2.MMONEYs;
 	} else if (iAmPlayer == UNI_C) {
+		myKPIs = d->p3.KPIs;
 		myTHDs = d->p3.THDs;
 		myBPSs = d->p3.BPSs;
 		myBQNs = d->p3.BQNs;
@@ -149,26 +151,96 @@ action decideAction (Game g) {
 		myMMONEYs = d->p3.MMONEYs;
 	}
 	
+	/// These store the amount of students that can be converted from
+	/// each type of student. This can be used as quick reference to
+	/// determine if the player can convert a number of students.
+	short convertibleBPSs = myBPSs / (getExchangeRate(g, iAmPlayer, STUDENT_BPS, STUDENT_BPS));
+	short convertibleBQNs = myBQNs / (getExchangeRate(g, iAmPlayer, STUDENT_BQN, STUDENT_BPS));
+	short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
+	short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
+	short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
+	
+	short whatDoIWantToDo = 0;
+	
+	// This tests the pathing function right now.
+	// I know this is the wrong size, I'm just using it for test right now.
+	// Right now, the destination will calculate how to get to co-ord (7, 5).
+	// When it's implemented, just use that last line (changing vertex for campus)
+	// if necessary. It will become part of the action near the end.
+	path destination = {0};
+	Coord testCoord;
+	testCoord.x = d->campus[28].start.x;
+	testCoord.y = d->campus[28].start.y;
+	convertVertex(d, destination, testCoord);
+	
+	/// This determines what the AI wants to accomplish.
+	// Right now, it just wants to perform a spinoff.
+	
+	whatDoIWantToDo = PERFORM_SPINOFF;
+	
 	/// Then it makes its action.
 	/// Right now, the AI will make a spin-off if it has the resources
 	/// to, and a pass if it doesn't.
-	if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
-		nextAction.actionCode = START_SPINOFF;
+	
+	if (whatDoIWantToDo == PERFORM_SPINOFF) {
+		/// This stores what resources all already at the necessary
+		/// amounts to perform this action.
+		short shortMJs = 0;
+		if (myMJs >= 1) {
+			shortMJs = 1;
+		}
+		short shortMTVs = 0;
+		if (myMTVs >= 1) {
+			shortMTVs = 1;
+		}
+		short shortMMONEYs = 0;
+		if (myMMONEYs >= 1) {
+			shortMMONEYs = 1;
+		}
+		if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
+			nextAction.actionCode = START_SPINOFF;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		} else if ((convertibleBPSs + convertibleBQNs) >= (3 - (shortMJs + shortMTVs + shortMMONEYs))) {
+			nextAction.actionCode = RETRAIN_STUDENTS;
+			if (convertibleBPSs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BPS;
+			} else if (convertibleBQNs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BQN;
+			}
+			
+			if (myMJs < 1) {
+				nextAction.disciplineTo = STUDENT_MJ;
+			} else if (myMTVs < 1) {
+				nextAction.disciplineTo = STUDENT_MTV;
+			} else if (myMMONEYs < 1) {
+				nextAction.disciplineTo = STUDENT_MMONEY;
+			}
+		} else {
+			nextAction.actionCode = PASS;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		}
 	} else {
 		nextAction.actionCode = PASS;
+		nextAction.disciplineFrom = 0;
+		nextAction.disciplineTo = 0;
+	}
+	
+	/// Now we copy the destination to the action's destination.
+	short pos = 0;
+	strncpy(nextAction.destination, destination, PATH_LIMIT - 1);
+	
+	/// As a final check, we check if that move is valid in terms of
+	/// Game.c. Otherwise, we save ourselves the trouble, and just
+	/// pass.
+	if (isLegalAction(g, nextAction) == FALSE) {
+		nextAction.actionCode = PASS;
+		nextAction.disciplineFrom = 0;
+		nextAction.disciplineTo = 0;
 	}
 
 	printf("Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
-	
-	/*// This tests the pathing function right now. It crashes though.
-	path *destination = malloc (sizeof(path));
-	Coord testCoord;
-	testCoord.x = 7;
-	testCoord.y = 5;
-	destination = convertVertex(d, destination, testCoord);
-	printf("%s", destination);
-	free(destination);
-	*/
 	
 	free(d);
 	
@@ -195,18 +267,28 @@ Data readGameData(Game g) {
 	readInitialiseEdges(d);
 	
 	pos = 0;
+	path destination = {0};
+	Coord start;
+	Coord end;
 	while (pos < NUM_EDGES) {
 		if (pos < NUM_VERTICES) {
-			// When convertVertex is done, replace this.
-			d->campus[pos].type = 0;
+			start.x = d->campus[pos].start.x;
+			start.y = d->campus[pos].start.y;
+			convertVertex(d, destination, start);
+			d->campus[pos].type = getCampus(g, destination);
 		}
-		// When convertEdge is done, replace this.
-		d->ARC[pos].type = 0;
+		start.x = d->ARC[pos].start.x;
+		start.y = d->ARC[pos].start.y;
+		end.x = d->ARC[pos].end.x;
+		end.y = d->ARC[pos].end.y;
+		convertEdge(d, destination, start, end);
+		d->ARC[pos].type = getARC(g, destination);
 		pos++;
 	}
 	
 	/// Now the player data.
 	d->p1.playerID = UNI_A;
+	d->p1.KPIs = getKPIpoints(g, UNI_A);
 	d->p1.ARCs = getARCs(g, UNI_A);
 	d->p1.campuses = getCampuses(g, UNI_A);
 	d->p1.GO8s = getGO8s(g, UNI_A);
@@ -220,6 +302,7 @@ Data readGameData(Game g) {
 	d->p1.MMONEYs = getStudents(g, UNI_A, STUDENT_MMONEY);
 	
 	d->p2.playerID = UNI_B;
+	d->p2.KPIs = getKPIpoints(g, UNI_B);
 	d->p2.ARCs = getARCs(g, UNI_B);
 	d->p2.campuses = getCampuses(g, UNI_B);
 	d->p2.GO8s = getGO8s(g, UNI_B);
@@ -233,6 +316,7 @@ Data readGameData(Game g) {
 	d->p2.MMONEYs = getStudents(g, UNI_B, STUDENT_MMONEY);
 	
 	d->p3.playerID = UNI_C;
+	d->p3.KPIs = getKPIpoints(g, UNI_C);
 	d->p3.ARCs = getARCs(g, UNI_C);
 	d->p3.campuses = getCampuses(g, UNI_C);
 	d->p3.GO8s = getGO8s(g, UNI_C);
@@ -248,7 +332,7 @@ Data readGameData(Game g) {
 }
 
 /// This function converts a co-ordinate into a path.
-path *convertVertex(Data d, path *destination, Coord start) {
+void convertVertex(Data d, path destination, Coord start) {
 	/// This co-ordinate tracks where on the board the path is up to.
 	/// It starts where all paths start.
 	Coord currentCoord;
@@ -267,7 +351,6 @@ path *convertVertex(Data d, path *destination, Coord start) {
 	
 	/// This stores the next direction the path will go.
 	char nextPathItem = 0;
-	char *nextPathItemPtr = &nextPathItem;
 	
 	short pos = 0;
 	// Anyone doing MATH1081 would see this De Morgan's law right here. :)
@@ -499,14 +582,52 @@ path *convertVertex(Data d, path *destination, Coord start) {
 			}
 		}
 		
-		memcpy(destination[pos], nextPathItemPtr, sizeof(char));
+		destination[pos] = nextPathItem;
 		pos++;
 	}
-	return destination;
 }
 
-path *convertEdge(Data d, path *destination, Coord start, Coord end) {
-	return destination;
+void convertEdge(Data d, path destination, Coord start, Coord end) {
+	/// Firstly, a path to one side of the edge is determined.
+	convertVertex(d, destination, start);
+	
+	/// Then,we determine the last direction they went in.
+	char direction = 2;
+	short pos = 0;
+	while ((destination[pos] == LEFT) || (destination[pos] == RIGHT)) {
+		if (destination[pos] == LEFT) {
+			direction--;
+		} else if (destination[pos] == RIGHT) {
+			direction++;
+		}
+		
+		pos++;
+	}
+	
+	/// Then we determine which direction is the next point.
+	char nextDirection = 0;
+	if ((start.x == (end.x + 1)) && (start.y == (end.y + 1))) {
+		nextDirection = 0;
+	} else if ((start.x == (end.x + 1)) && (start.y == end.y)) {
+		nextDirection = 1;
+	}	if ((start.x == end.x) && (start.y == (end.y - 1))) {
+		nextDirection = 2;
+	}	if ((start.x == (end.x - 1)) && (start.y == (end.y - 1))) {
+		nextDirection = 3;
+	}	if ((start.x == (end.x - 1)) && (start.y == end.y)) {
+		nextDirection = 4;
+	}	if ((start.x == end.x) && (start.y == (end.y + 1))) {
+		nextDirection = 5;
+	}
+	
+	/// Then we determine which direction the path needs to go to get there.
+	if (((nextDirection - direction) == -2) || ((nextDirection - direction) == 4)) {
+		destination[pos] = LEFT;
+	} else if (((nextDirection - direction) == 2) || ((nextDirection - direction) == -4)) {
+		destination[pos] = RIGHT;
+	} else {
+		destination[pos] = BACK;
+	}
 }
 
 /// This function compares a coordinate with the campuses stored in
