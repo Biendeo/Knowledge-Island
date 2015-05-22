@@ -1065,6 +1065,8 @@ int getExchangeRate (Game g, int player, int disciplineFrom, int disciplineTo) {
 				exchangeRate = 2;
 			}
 		} else if (player == UNI_C) {
+
+
 			if ((g->campus[29].type == CAMPUS_C) ||
 			    (g->campus[35].type == CAMPUS_C) ||
 				(g->campus[29].type == GO8_C) ||
