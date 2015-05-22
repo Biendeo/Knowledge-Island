@@ -104,8 +104,8 @@ typedef struct _data {
 } * Data;
 
 Data readGameData(Game g);
-path *convertVertex(Data d, path *destination, Coord start);
-path *convertEdge(Data d, path *destination, Coord start, Coord end);
+void convertVertex(Data d, path destination, Coord start);
+void convertEdge(Data d, path destination, Coord start, Coord end);
 short searchForCampus(Data d, Coord coord);
 void readInitialiseVertices(Data d);
 void readInitialiseEdges(Data d);
@@ -168,10 +168,10 @@ action decideAction (Game g) {
 	// When it's implemented, just use that last line (changing vertex for campus)
 	// if necessary. It will become part of the action near the end.
 	path destination = {0};
-	// Coord testCoord;
-	// testCoord.x = d->campus[26].start.x;
-	// testCoord.y = d->campus[26].start.y;
-	// convertVertex(d, &destination, testCoord);
+	Coord testCoord;
+	testCoord.x = d->campus[28].start.x;
+	testCoord.y = d->campus[28].start.y;
+	convertVertex(d, destination, testCoord);
 	
 	/// This determines what the AI wants to accomplish.
 	// Right now, it just wants to perform a spinoff.
@@ -197,7 +197,11 @@ action decideAction (Game g) {
 		if (myMMONEYs >= 1) {
 			shortMMONEYs = 1;
 		}
-		if ((convertibleBPSs + convertibleBQNs) >= (3 - (shortMJs + shortMTVs, + shortMMONEYs))) {
+		if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
+			nextAction.actionCode = START_SPINOFF;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		} else if ((convertibleBPSs + convertibleBQNs) >= (3 - (shortMJs + shortMTVs + shortMMONEYs))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
 			if (convertibleBPSs >= 1) {
 				nextAction.disciplineFrom = STUDENT_BPS;
@@ -212,10 +216,6 @@ action decideAction (Game g) {
 			} else if (myMMONEYs < 1) {
 				nextAction.disciplineTo = STUDENT_MMONEY;
 			}
-		} else if (myMJs >= 1 && myMTVs >= 1 && myMMONEYs >= 1) {
-			nextAction.actionCode = START_SPINOFF;
-			nextAction.disciplineFrom = 0;
-			nextAction.disciplineTo = 0;
 		} else {
 			nextAction.actionCode = PASS;
 			nextAction.disciplineFrom = 0;
@@ -229,7 +229,7 @@ action decideAction (Game g) {
 	
 	/// Now we copy the destination to the action's destination.
 	short pos = 0;
-	strncpy(&nextAction.destination, &destination, PATH_LIMIT - 1);
+	strncpy(nextAction.destination, destination, PATH_LIMIT - 1);
 	
 	/// As a final check, we check if that move is valid in terms of
 	/// Game.c. Otherwise, we save ourselves the trouble, and just
@@ -323,7 +323,7 @@ Data readGameData(Game g) {
 }
 
 /// This function converts a co-ordinate into a path.
-path *convertVertex(Data d, path *destination, Coord start) {
+void convertVertex(Data d, path destination, Coord start) {
 	/// This co-ordinate tracks where on the board the path is up to.
 	/// It starts where all paths start.
 	Coord currentCoord;
@@ -342,7 +342,6 @@ path *convertVertex(Data d, path *destination, Coord start) {
 	
 	/// This stores the next direction the path will go.
 	char nextPathItem = 0;
-	char *nextPathItemPtr = &nextPathItem;
 	
 	short pos = 0;
 	// Anyone doing MATH1081 would see this De Morgan's law right here. :)
@@ -574,24 +573,22 @@ path *convertVertex(Data d, path *destination, Coord start) {
 			}
 		}
 		
-		// Should we be using memcpy, or is it not allowed?
-		memcpy(destination[pos], nextPathItemPtr, sizeof(char));
+		destination[pos] = nextPathItem;
 		pos++;
 	}
-	return destination;
 }
 
-path *convertEdge(Data d, path *destination, Coord start, Coord end) {
+void convertEdge(Data d, path destination, Coord start, Coord end) {
 	/// Firstly, a path to one side of the edge is determined.
-	destination = convertVertex(d, destination, start);
+	convertVertex(d, destination, start);
 	
 	/// Then,we determine the last direction they went in.
 	char direction = 2;
 	short pos = 0;
-	while ((*destination[pos] == LEFT) || (*destination[pos] == RIGHT)) {
-		if (*destination[pos] == LEFT) {
+	while ((destination[pos] == LEFT) || (destination[pos] == RIGHT)) {
+		if (destination[pos] == LEFT) {
 			direction--;
-		} else if (*destination[pos] == RIGHT) {
+		} else if (destination[pos] == RIGHT) {
 			direction++;
 		}
 		
@@ -616,14 +613,12 @@ path *convertEdge(Data d, path *destination, Coord start, Coord end) {
 	
 	/// Then we determine which direction the path needs to go to get there.
 	if (((nextDirection - direction) == -2) || ((nextDirection - direction) == 4)) {
-		*destination[pos] = LEFT;
+		destination[pos] = LEFT;
 	} else if (((nextDirection - direction) == 2) || ((nextDirection - direction) == -4)) {
-		*destination[pos] = RIGHT;
+		destination[pos] = RIGHT;
 	} else {
-		*destination[pos] = BACK;
+		destination[pos] = BACK;
 	}
-	
-	return destination;
 }
 
 /// This function compares a coordinate with the campuses stored in
