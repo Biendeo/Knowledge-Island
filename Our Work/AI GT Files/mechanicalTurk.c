@@ -119,7 +119,7 @@ action decideAction (Game g) {
 	/// It then stores what values are its own from here.
 	short iAmPlayer = d->whoseTurn;
 	short myKPIs = 0;
-	short myTHDs = 0;
+	// short myTHDs = 0;
 	short myBPSs = 0;
 	short myBQNs = 0;
 	short myMJs = 0;
@@ -127,7 +127,7 @@ action decideAction (Game g) {
 	short myMMONEYs = 0;
 	if (iAmPlayer == UNI_A) {
 		myKPIs = d->p1.KPIs;
-		myTHDs = d->p1.THDs;
+		// myTHDs = d->p1.THDs;
 		myBPSs = d->p1.BPSs;
 		myBQNs = d->p1.BQNs;
 		myMJs = d->p1.MJs;
@@ -135,7 +135,7 @@ action decideAction (Game g) {
 		myMMONEYs = d->p1.MMONEYs;
 	} else if (iAmPlayer == UNI_B) {
 		myKPIs = d->p2.KPIs;
-		myTHDs = d->p2.THDs;
+		// myTHDs = d->p2.THDs;
 		myBPSs = d->p2.BPSs;
 		myBQNs = d->p2.BQNs;
 		myMJs = d->p2.MJs;
@@ -143,7 +143,7 @@ action decideAction (Game g) {
 		myMMONEYs = d->p2.MMONEYs;
 	} else if (iAmPlayer == UNI_C) {
 		myKPIs = d->p3.KPIs;
-		myTHDs = d->p3.THDs;
+		// myTHDs = d->p3.THDs;
 		myBPSs = d->p3.BPSs;
 		myBQNs = d->p3.BQNs;
 		myMJs = d->p3.MJs;
@@ -151,30 +151,52 @@ action decideAction (Game g) {
 		myMMONEYs = d->p3.MMONEYs;
 	}
 	
+	/// Here's a splash so we know whose AI this is. It will only put
+	/// this message once (hopefully).
+	if ((getTurnNumber(g) < 3) && (myKPIs == 20)) {
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		printf("!      mechanicalTurk.c      !\n");
+		printf("!    By Thomas Moffet and    !\n");
+		printf("!      George Mountakis      !\n");
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		
+		printf("\n!! Game freshly fried on 22/05/15\n");
+		printf("!! If you see a line starting with !!, then it's from this mechanicalTurk.c.\n\n");
+	}
+	
+	// printf("KPIs = %d, THDs = %d, BPS = %d, BQN = %d, MJ = %d, MTV = %d, MMONEY = %d\n", myKPIs, myTHDs, myBPSs, myBQNs, myMJs, myMTVs, myMMONEYs);
+	
 	/// These store the amount of students that can be converted from
 	/// each type of student. This can be used as quick reference to
 	/// determine if the player can convert a number of students.
 	short convertibleBPSs = myBPSs / (getExchangeRate(g, iAmPlayer, STUDENT_BPS, STUDENT_BPS));
 	short convertibleBQNs = myBQNs / (getExchangeRate(g, iAmPlayer, STUDENT_BQN, STUDENT_BPS));
-	short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
-	short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
-	short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
+	// short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
+	// short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
+	// short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
 	
 	short whatDoIWantToDo = 0;
 	
 	// This tests the pathing function right now.
-	// I know this is the wrong size, I'm just using it for test right now.
 	// Right now, the destination will calculate how to get to co-ord (7, 5).
 	// When it's implemented, just use that last line (changing vertex for campus)
 	// if necessary. It will become part of the action near the end.
 	path destination = {0};
-	Coord testCoord;
-	testCoord.x = d->campus[28].start.x;
-	testCoord.y = d->campus[28].start.y;
-	convertVertex(d, destination, testCoord);
+	// Coord testCoord;
+	// testCoord.x = d->campus[28].start.x;
+	// testCoord.y = d->campus[28].start.y;
+	// convertVertex(d, destination, testCoord);
+	
+	// destination[0] = 'L';
+	// destination[1] = 'R';
+	// destination[2] = 'L';
 	
 	/// This determines what the AI wants to accomplish.
-	// Right now, it just wants to perform a spinoff.
+	// Right now, it just wants to perform a spinoff. Later, this will
+	// be the determinating logic. It should be based mostly on the
+	// board situation, or KPIs, rather than resources on-hand. This
+	// should give the AI a "goal", which should make its actions more
+	// consistent.
 	
 	whatDoIWantToDo = PERFORM_SPINOFF;
 	
@@ -228,7 +250,6 @@ action decideAction (Game g) {
 	}
 	
 	/// Now we copy the destination to the action's destination.
-	short pos = 0;
 	strncpy(nextAction.destination, destination, PATH_LIMIT - 1);
 	
 	/// As a final check, we check if that move is valid in terms of
@@ -240,7 +261,7 @@ action decideAction (Game g) {
 		nextAction.disciplineTo = 0;
 	}
 
-	printf("Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
+	printf("!! Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
 	
 	free(d);
 	
@@ -251,6 +272,7 @@ Data readGameData(Game g) {
 	Data d = malloc(sizeof(struct _data));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
+	short arraypos = 0;
 
 	d->turnNumber = getTurnNumber(g);
 	d->whoseTurn = getWhoseTurn(g);
@@ -276,6 +298,13 @@ Data readGameData(Game g) {
 			start.y = d->campus[pos].start.y;
 			convertVertex(d, destination, start);
 			d->campus[pos].type = getCampus(g, destination);
+			// printf("Campus %d at %s is type %d.\n", pos, destination, d->campus[pos].type);
+			
+			arraypos = 0;
+			while (arraypos < PATH_LIMIT) {
+				destination[arraypos] = 0;
+				arraypos++;
+			}
 		}
 		start.x = d->ARC[pos].start.x;
 		start.y = d->ARC[pos].start.y;
@@ -283,7 +312,14 @@ Data readGameData(Game g) {
 		end.y = d->ARC[pos].end.y;
 		convertEdge(d, destination, start, end);
 		d->ARC[pos].type = getARC(g, destination);
+		// printf("ARC %d at %s is type %d.\n", pos, destination, d->ARC[pos].type);
 		pos++;
+		
+		arraypos = 0;
+		while (arraypos < PATH_LIMIT) {
+			destination[arraypos] = 0;
+			arraypos++;
+		}
 	}
 	
 	/// Now the player data.
@@ -604,26 +640,37 @@ void convertEdge(Data d, path destination, Coord start, Coord end) {
 		pos++;
 	}
 	
+	while (direction < 0) {
+		direction += 6;
+	}
+	
+	while (direction > 5) {
+		direction -= 6;
+	}
+	
 	/// Then we determine which direction is the next point.
 	char nextDirection = 0;
-	if ((start.x == (end.x + 1)) && (start.y == (end.y + 1))) {
+	if ((start.x == (end.x - 1)) && (start.y == (end.y - 1))) {
 		nextDirection = 0;
-	} else if ((start.x == (end.x + 1)) && (start.y == end.y)) {
+	} else if ((start.x == (end.x - 1)) && (start.y == end.y)) {
 		nextDirection = 1;
-	}	if ((start.x == end.x) && (start.y == (end.y - 1))) {
+	}   if ((start.x == end.x) && (start.y == (end.y + 1))) {
 		nextDirection = 2;
-	}	if ((start.x == (end.x - 1)) && (start.y == (end.y - 1))) {
+	}   if ((start.x == (end.x + 1)) && (start.y == (end.y + 1))) {
 		nextDirection = 3;
-	}	if ((start.x == (end.x - 1)) && (start.y == end.y)) {
+	}   if ((start.x == (end.x + 1)) && (start.y == end.y)) {
 		nextDirection = 4;
-	}	if ((start.x == end.x) && (start.y == (end.y + 1))) {
+	}   if ((start.x == end.x) && (start.y == (end.y - 1))) {
 		nextDirection = 5;
 	}
 	
+	// printf("Start: %d, %d; End: %d, %d\n", start.x, start.y, end.x, end.y);
+	// printf("Dir = %d, nextDir = %d\n", direction, nextDirection);
+	
 	/// Then we determine which direction the path needs to go to get there.
-	if (((nextDirection - direction) == -2) || ((nextDirection - direction) == 4)) {
+	if (((nextDirection - direction) == -1) || ((nextDirection - direction) == 5)) {
 		destination[pos] = LEFT;
-	} else if (((nextDirection - direction) == 2) || ((nextDirection - direction) == -4)) {
+	} else if (((nextDirection - direction) == 1) || ((nextDirection - direction) == -5)) {
 		destination[pos] = RIGHT;
 	} else {
 		destination[pos] = BACK;
@@ -641,7 +688,7 @@ short searchForCampus(Data d, Coord coord) {
 	/// values match that vertex's. Then, it breaks and returns that ID.
 	while ((pos < NUM_VERTICES) && (ID == NOT_FOUND)) {
 		if ((coord.x == d->campus[pos].start.x) &&
-		    (coord.y == d->campus[pos].start.y)) {
+			(coord.y == d->campus[pos].start.y)) {
 			ID = pos;
 		}
 		pos++;
@@ -886,7 +933,7 @@ void readInitialiseEdges(Data d) {
 	d->ARC[23].end.x   = 3;
 	d->ARC[23].end.y   = 0;
 
-	/// Secondly, egdes that do up-right.
+	/// Secondly, edges that do up-right.
 	d->ARC[24].start.x = 6;
 	d->ARC[24].start.y = 9;
 	d->ARC[24].end.x   = 7;
