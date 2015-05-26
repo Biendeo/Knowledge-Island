@@ -224,9 +224,9 @@ action decideAction (Game g) {
 	
 	if (((myCampuses >= 5) && (myGO8s != 0)) && (validGO8s[0] != -1)) {
 		whatDoIWantToDo = MAKE_GO8;
-	} else if ((((float)myARCs / (myCampuses + myGO8s)) > 2) && (validCampuses[0] != -1)) {
+	} else if ((((float)myARCs / (myCampuses + myGO8s)) >= 2) && (validCampuses[0] != -1)) {
 		whatDoIWantToDo = MAKE_CAMPUS;
-	} else if ((myARCs < 10) && (validARCs[0] != -1)) {
+	} else if ((myARCs < 20) && (validARCs[0] != -1)) {
 		whatDoIWantToDo = MAKE_ARC;
 	} else {
 		whatDoIWantToDo = PERFORM_SPINOFF;
@@ -260,7 +260,7 @@ action decideAction (Game g) {
 			Coord entryStart = d->campus[ID].start;
 			convertVertex(d, destination, entryStart);
 			// FIGURE OUT WHEN TO CONVERT RESOURCES
-		} else if ((convertibleBPSs + convertibleBQNs) >= (4 - (shortBPSs + shortBQNs + shortMJs + shortMTVs))) {
+		} else if ((convertibleBPSs + convertibleBQNs + convertibleMJs + convertibleMTVs + convertibleMMONEYs) >= (4 - (shortBPSs + shortBQNs + shortMJs + shortMTVs))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
 			if (convertibleBPSs >= 2) {
 				nextAction.disciplineFrom = STUDENT_BPS;
@@ -324,7 +324,6 @@ action decideAction (Game g) {
 				nextAction.disciplineTo = STUDENT_BQN;
 			}
 		} else {
-		printf("PASS 1\n");
 			nextAction.actionCode = PASS;
 			nextAction.disciplineFrom = 0;
 			nextAction.disciplineTo = 0;
