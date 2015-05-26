@@ -298,15 +298,15 @@ action decideAction (Game g) {
 			shortBQNs = 1;
 		}
 		
-		printf("myBPSs = %d, myBQNs = %d\n", myBPSs, myBQNs);
+		// printf("myBPSs = %d, myBQNs = %d\n", myBPSs, myBQNs);
 		if (myBPSs >= 1 && myBQNs >= 1) {
 			short ID = validARCs[0];
 			nextAction.actionCode = OBTAIN_ARC;
 			Coord entryStart = d->ARC[ID].start;
 			Coord entryEnd = d->ARC[ID].end;
 			convertEdge(d, destination, entryStart, entryEnd);
-			printf("ARC %d's destination = %s\n", ID, destination);
-			printf("Coords %d, %d and %d, %d\n", entryStart.x, entryStart.y, entryEnd.x, entryEnd.y);
+			// printf("ARC %d's destination = %s\n", ID, destination);
+			// printf("Coords %d, %d and %d, %d\n", entryStart.x, entryStart.y, entryEnd.x, entryEnd.y);
 			// FIGURE OUT WHEN TO CONVERT RESOURCES
 		} else if ((convertibleMJs + convertibleMTVs + convertibleMMONEYs) >= (2 - (shortBPSs + shortBQNs ))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
@@ -388,29 +388,29 @@ action decideAction (Game g) {
 		nextAction.disciplineTo = 0;
 	}
 	
-	printf("!! My goal is %d.\n", whatDoIWantToDo);
-	short poopypos = 0;
-	printf("Valid campuses: ");
-	while (poopypos < NUM_VERTICES) {
-		printf("%d ", validCampuses[poopypos]);
-		poopypos++;
-	}
-	poopypos = 0;
-	printf("\nValid GO8s: ");
-	while (poopypos < NUM_VERTICES) {
-		printf("%d ", validGO8s[poopypos]);
-		poopypos++;
-	}
-	poopypos = 0;
-	printf("\nValid ARCs: ");
-	while (poopypos < NUM_EDGES) {
-		printf("%d ", validARCs[poopypos]);
-		poopypos++;
-	}
-	printf("\n");
+	// printf("!! My goal is %d.\n", whatDoIWantToDo);
+	// short poopypos = 0;
+	// printf("Valid campuses: ");
+	// while (poopypos < NUM_VERTICES) {
+		// printf("%d ", validCampuses[poopypos]);
+		// poopypos++;
+	// }
+	// poopypos = 0;
+	// printf("\nValid GO8s: ");
+	// while (poopypos < NUM_VERTICES) {
+		// printf("%d ", validGO8s[poopypos]);
+		// poopypos++;
+	// }
+	// poopypos = 0;
+	// printf("\nValid ARCs: ");
+	// while (poopypos < NUM_EDGES) {
+		// printf("%d ", validARCs[poopypos]);
+		// poopypos++;
+	// }
+	// printf("\n");
 	
 	printf("!! Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
-	getchar();
+	// getchar();
 	free(d);
 	
 	return nextAction;
@@ -876,7 +876,7 @@ void checkValidPositions(Data d, int player, char validCampuses[54], char validG
 	short arrayPos = 0;
 	short ID = 0;
 	while (ID < NUM_VERTICES) {
-		if (validCampusPositions(d, player, ID) == TRUE) {
+		if ((validCampusPositions(d, player, ID) == TRUE) && (d->campus[ID].type == VACANT_VERTEX)) {
 			validCampuses[arrayPos] = ID;
 			arrayPos++;
 		}
@@ -896,7 +896,7 @@ void checkValidPositions(Data d, int player, char validCampuses[54], char validG
 	arrayPos = 0;
 	ID = 0;
 	while (ID < NUM_EDGES) {
-		if (validARCPositions(d, player, ID) == TRUE) {
+		if ((validARCPositions(d, player, ID) == TRUE) && (d->ARC[ID].type == VACANT_ARC)) {
 			validARCs[arrayPos] = ID;
 			arrayPos++;
 		}
