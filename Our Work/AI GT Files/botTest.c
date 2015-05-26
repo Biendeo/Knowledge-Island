@@ -95,13 +95,19 @@ int main(int argc, char *argv[]) {
 
 /// This is the main playing function.
 int playTurn(Game g) {
-	/// The action is created. The action is given a value so that it
-	/// doesn't accidentally skip the user's turn.
 	action a;
 	
 	while (a.actionCode != PASS) {
 		a = decideAction(g);
+		
 		if (isLegalAction(g, a) == TRUE) {
+			if (a.actionCode == START_SPINOFF) {
+				if (rand() % 3 == 0) {
+					a.actionCode = OBTAIN_IP_PATENT;
+				} else {
+					a.actionCode = OBTAIN_PUBLICATION;
+				}
+			}
 			makeAction(g, a);
 		} else {
 			printf("That action was not legal.\n");
