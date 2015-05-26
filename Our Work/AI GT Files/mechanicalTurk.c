@@ -17,6 +17,9 @@
 #define NUM_VERTICES 54
 
 #define PERFORM_SPINOFF 1
+#define MAKE_CAMPUS 2
+#define MAKE_GO8 3
+#define MAKE_ARC 4
 
 #define NOT_FOUND -1
 
@@ -104,9 +107,14 @@ typedef struct _data {
 } * Data;
 
 Data readGameData(Game g);
+void flushPath (path destination);
 void convertVertex(Data d, path destination, Coord start);
 void convertEdge(Data d, path destination, Coord start, Coord end);
 short searchForCampus(Data d, Coord coord);
+short searchForARC(Data d, Coord start, Coord end);
+void checkValidPositions(Data d, int player, char validCampuses[], char validGO8s[], char validARCs[]);
+short validCampusPositions(Data d, int player, short ID);
+short validARCPositions(Data d, int player, short ID);
 void readInitialiseVertices(Data d);
 void readInitialiseEdges(Data d);
 
@@ -118,6 +126,11 @@ action decideAction (Game g) {
 	
 	/// It then stores what values are its own from here.
 	short iAmPlayer = d->whoseTurn;
+	short myARCs = 0;
+	short myCampuses = 0;
+	short myGO8s = 0;
+	// short myPatents = 0;
+	// short myPapers = 0;
 	short myKPIs = 0;
 	// short myTHDs = 0;
 	short myBPSs = 0;
@@ -126,6 +139,11 @@ action decideAction (Game g) {
 	short myMTVs = 0;
 	short myMMONEYs = 0;
 	if (iAmPlayer == UNI_A) {
+		myARCs = d->p1.ARCs;
+		myCampuses = d->p1.campuses;
+		myGO8s = d->p1.GO8s;
+		// myPatents = d->p1.patents;
+		// myPapers = d->p1.papers;
 		myKPIs = d->p1.KPIs;
 		// myTHDs = d->p1.THDs;
 		myBPSs = d->p1.BPSs;
@@ -134,6 +152,11 @@ action decideAction (Game g) {
 		myMTVs = d->p1.MTVs;
 		myMMONEYs = d->p1.MMONEYs;
 	} else if (iAmPlayer == UNI_B) {
+		myARCs = d->p2.ARCs;
+		myCampuses = d->p2.campuses;
+		myGO8s = d->p2.GO8s;
+		// myPatents = d->p2.patents;
+		// myPapers = d->p2.papers;
 		myKPIs = d->p2.KPIs;
 		// myTHDs = d->p2.THDs;
 		myBPSs = d->p2.BPSs;
@@ -142,6 +165,11 @@ action decideAction (Game g) {
 		myMTVs = d->p2.MTVs;
 		myMMONEYs = d->p2.MMONEYs;
 	} else if (iAmPlayer == UNI_C) {
+		myARCs = d->p3.ARCs;
+		myCampuses = d->p3.campuses;
+		myGO8s = d->p3.GO8s;
+		// myPatents = d->p3.patents;
+		// myPapers = d->p3.papers;
 		myKPIs = d->p3.KPIs;
 		// myTHDs = d->p3.THDs;
 		myBPSs = d->p3.BPSs;
@@ -171,25 +199,21 @@ action decideAction (Game g) {
 	/// determine if the player can convert a number of students.
 	short convertibleBPSs = myBPSs / (getExchangeRate(g, iAmPlayer, STUDENT_BPS, STUDENT_BPS));
 	short convertibleBQNs = myBQNs / (getExchangeRate(g, iAmPlayer, STUDENT_BQN, STUDENT_BPS));
-	// short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
-	// short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
-	// short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
+	short convertibleMJs = myMJs / (getExchangeRate(g, iAmPlayer, STUDENT_MJ, STUDENT_BPS));
+	short convertibleMTVs = myMTVs / (getExchangeRate(g, iAmPlayer, STUDENT_MTV, STUDENT_BPS));
+	short convertibleMMONEYs = myMMONEYs / (getExchangeRate(g, iAmPlayer, STUDENT_MMONEY, STUDENT_BPS));
+	
+	/// This stores all the positions that the AI can build things,
+	/// regardless of their resources. It only depends on the board
+	/// placement.
+	char validCampuses[54] = {-1};
+	char validGO8s[54] = {-1};
+	char validARCs[72] = {-1};
+	
+	checkValidPositions(d, iAmPlayer, validCampuses, validGO8s, validARCs);
 	
 	short whatDoIWantToDo = 0;
-	
-	// This tests the pathing function right now.
-	// Right now, the destination will calculate how to get to co-ord (7, 5).
-	// When it's implemented, just use that last line (changing vertex for campus)
-	// if necessary. It will become part of the action near the end.
 	path destination = {0};
-	// Coord testCoord;
-	// testCoord.x = d->campus[28].start.x;
-	// testCoord.y = d->campus[28].start.y;
-	// convertVertex(d, destination, testCoord);
-	
-	// destination[0] = 'L';
-	// destination[1] = 'R';
-	// destination[2] = 'L';
 	
 	/// This determines what the AI wants to accomplish.
 	// Right now, it just wants to perform a spinoff. Later, this will
@@ -198,13 +222,110 @@ action decideAction (Game g) {
 	// should give the AI a "goal", which should make its actions more
 	// consistent.
 	
-	whatDoIWantToDo = PERFORM_SPINOFF;
+	if (((myCampuses >= 5) && (myGO8s != 0)) && (validGO8s[0] != -1)) {
+		whatDoIWantToDo = MAKE_GO8;
+	} else if ((((float)myARCs / (myCampuses + myGO8s)) > 2) && (validCampuses[0] != -1)) {
+		whatDoIWantToDo = MAKE_CAMPUS;
+	} else if ((myARCs < 10) && (validARCs[0] != -1)) {
+		whatDoIWantToDo = MAKE_ARC;
+	} else {
+		whatDoIWantToDo = PERFORM_SPINOFF;
+	}
 	
 	/// Then it makes its action.
 	/// Right now, the AI will make a spin-off if it has the resources
 	/// to, and a pass if it doesn't.
 	
-	if (whatDoIWantToDo == PERFORM_SPINOFF) {
+	if (whatDoIWantToDo == MAKE_CAMPUS) {
+		short shortBPSs = 0;
+		if (myBPSs >= 1) {
+			shortBPSs = 1;
+		}
+		short shortBQNs = 0;
+		if (myBQNs >= 1) {
+			shortBQNs = 1;
+		}
+		short shortMJs = 0;
+		if (myMJs >= 1) {
+			shortMJs = 1;
+		}
+		short shortMTVs = 0;
+		if (myMTVs >= 1) {
+			shortMTVs = 1;
+		}
+		
+		if (myBPSs >= 1 && myBQNs >= 1 && myMJs >= 1 && myMTVs >= 1) {
+			short ID = validCampuses[0];
+			nextAction.actionCode = BUILD_CAMPUS;
+			Coord entryStart = d->campus[ID].start;
+			convertVertex(d, nextAction.destination, entryStart);
+			// FIGURE OUT WHEN TO CONVERT RESOURCES
+		} else if ((convertibleBPSs + convertibleBQNs) >= (4 - (shortBPSs + shortBQNs + shortMJs + shortMTVs))) {
+			nextAction.actionCode = RETRAIN_STUDENTS;
+			if (convertibleBPSs >= 2) {
+				nextAction.disciplineFrom = STUDENT_BPS;
+			} else if (convertibleBQNs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BQN;
+			} else if (convertibleMJs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MJ;
+			} else if (convertibleMTVs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MTV;
+			} else if (convertibleMMONEYs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MMONEY;
+			}
+			
+			if (myBPSs < 1) {
+				nextAction.disciplineTo = STUDENT_BPS;
+			} else if (myBQNs < 1) {
+				nextAction.disciplineTo = STUDENT_BQN;
+			} else if (myMJs < 1) {
+				nextAction.disciplineTo = STUDENT_MJ;
+			} else if (myMTVs < 1) {
+				nextAction.disciplineTo = STUDENT_MTV;
+			}
+		} else {
+			nextAction.actionCode = PASS;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		}
+	} else if (whatDoIWantToDo == MAKE_ARC) {
+		short shortBPSs = 0;
+		if (myBPSs >= 1) {
+			shortBPSs = 1;
+		}
+		short shortBQNs = 0;
+		if (myBQNs >= 1) {
+			shortBQNs = 1;
+		}
+		
+		if (myBPSs >= 1 && myBQNs >= 1) {
+			short ID = validARCs[0];
+			nextAction.actionCode = OBTAIN_ARC;
+			Coord entryStart = d->campus[ID].start;
+			Coord entryEnd = d->ARC[ID].end;
+			convertEdge(d, nextAction.destination, entryStart, entryEnd);
+			// FIGURE OUT WHEN TO CONVERT RESOURCES
+		} else if ((convertibleMJs + convertibleMTVs + convertibleMMONEYs) >= (2 - (shortBPSs + shortBQNs ))) {
+			nextAction.actionCode = RETRAIN_STUDENTS;
+			if (convertibleMJs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MJ;
+			} else if (convertibleMTVs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MTV;
+			} else if (convertibleMMONEYs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MMONEY;
+			}
+			
+			if (myBPSs < 1) {
+				nextAction.disciplineTo = STUDENT_BPS;
+			} else if (myBQNs < 1) {
+				nextAction.disciplineTo = STUDENT_BQN;
+			}
+		} else {
+			nextAction.actionCode = PASS;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		}
+	} else if (whatDoIWantToDo == PERFORM_SPINOFF) {
 		/// This stores what resources all already at the necessary
 		/// amounts to perform this action.
 		short shortMJs = 0;
@@ -260,9 +381,30 @@ action decideAction (Game g) {
 		nextAction.disciplineFrom = 0;
 		nextAction.disciplineTo = 0;
 	}
-
-	printf("!! Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
 	
+	printf("!! My goal is %d.\n", whatDoIWantToDo);
+	short poopypos = 0;
+	printf("Valid campuses: ");
+	while (poopypos < NUM_VERTICES) {
+		printf("%d ", validCampuses[poopypos]);
+		poopypos++;
+	}
+	poopypos = 0;
+	printf("\nValid GO8s: ");
+	while (poopypos < NUM_VERTICES) {
+		printf("%d ", validGO8s[poopypos]);
+		poopypos++;
+	}
+	poopypos = 0;
+	printf("\nValid ARCs: ");
+	while (poopypos < NUM_EDGES) {
+		printf("%d ", validARCs[poopypos]);
+		poopypos++;
+	}
+	printf("\n");
+	
+	printf("!! Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
+	getchar();
 	free(d);
 	
 	return nextAction;
@@ -272,7 +414,6 @@ Data readGameData(Game g) {
 	Data d = malloc(sizeof(struct _data));
 	/// This is used to fill out the discipline and dice layouts.
 	short pos = 0;
-	short arraypos = 0;
 
 	d->turnNumber = getTurnNumber(g);
 	d->whoseTurn = getWhoseTurn(g);
@@ -300,11 +441,7 @@ Data readGameData(Game g) {
 			d->campus[pos].type = getCampus(g, destination);
 			// printf("Campus %d at %s is type %d.\n", pos, destination, d->campus[pos].type);
 			
-			arraypos = 0;
-			while (arraypos < PATH_LIMIT) {
-				destination[arraypos] = 0;
-				arraypos++;
-			}
+			flushPath(destination);
 		}
 		start.x = d->ARC[pos].start.x;
 		start.y = d->ARC[pos].start.y;
@@ -315,11 +452,7 @@ Data readGameData(Game g) {
 		// printf("ARC %d at %s is type %d.\n", pos, destination, d->ARC[pos].type);
 		pos++;
 		
-		arraypos = 0;
-		while (arraypos < PATH_LIMIT) {
-			destination[arraypos] = 0;
-			arraypos++;
-		}
+		flushPath(destination);
 	}
 	
 	/// Now the player data.
@@ -365,6 +498,15 @@ Data readGameData(Game g) {
 	d->p3.MTVs = getStudents(g, UNI_C, STUDENT_MTV);
 	d->p3.MMONEYs = getStudents(g, UNI_C, STUDENT_MMONEY);
 	return d;
+}
+
+/// This function changes all the values in a path to 0.
+void flushPath(path destination) {
+	short pos = 0;
+	while (pos < PATH_LIMIT) {
+		destination[pos] = 0;
+		pos++;
+	}
 }
 
 /// This function converts a co-ordinate into a path.
@@ -695,6 +837,341 @@ short searchForCampus(Data d, Coord coord) {
 	}
 
 	return ID;
+}
+
+/// This is the same as above, just with two coords for edges.
+short searchForARC(Data d, Coord start, Coord end) {
+	short ID = NOT_FOUND;
+	short pos = 0;
+
+	/// Every edge is checked until the given co-ordinate's x and y
+	/// values match that edge's. Then, it breaks and returns that ID.
+	/// It checks if either of the ends of an edge match
+	while ((pos < NUM_EDGES) && (ID == NOT_FOUND)) {
+		if (((start.x == d->ARC[pos].start.x) &&
+		     (start.y == d->ARC[pos].start.y) &&
+			 (end.x == d->ARC[pos].end.x) &&
+			 (end.y == d->ARC[pos].end.y)) ||
+			((start.x == d->ARC[pos].end.x) &&
+		     (start.y == d->ARC[pos].end.y) &&
+			 (end.x == d->ARC[pos].start.x) &&
+			 (end.y == d->ARC[pos].start.y))) {
+				ID = pos;
+			}
+		pos++;
+	}
+	
+	return ID;
+}
+
+/// This function changes three arrays and changes them to say which
+/// spaces buildings can be built.
+void checkValidPositions(Data d, int player, char validCampuses[54], char validGO8s[54], char validARCs[72]) {
+	short arrayPos = 0;
+	short ID = 0;
+	while (ID < NUM_VERTICES) {
+		if (validCampusPositions(d, player, ID) == TRUE) {
+			validCampuses[arrayPos] = ID;
+			arrayPos++;
+		}
+		ID++;
+	}
+	
+	arrayPos = 0;
+	ID = 0;
+	while (ID < NUM_VERTICES) {
+		if (d->campus[ID].type == player) {
+			validGO8s[arrayPos] = ID;
+			arrayPos++;
+		}
+		ID++;
+	}
+	
+	arrayPos = 0;
+	ID = 0;
+	while (ID < NUM_EDGES) {
+		if (validARCPositions(d, player, ID) == TRUE) {
+			validARCs[arrayPos] = ID;
+			arrayPos++;
+		}
+		ID++;
+	}
+}
+
+short validCampusPositions(Data d, int player, short ID) {
+	/// This stores whether their campus can actually be placed there.
+	short isItValid = FALSE;
+	
+	/// This stores how many directions we've tested. This should stop
+	/// at 6.
+	short iterations = 0;
+	short testID = NOT_FOUND;
+	
+	/// This stores the co-ordinate of where they want to go.
+	Coord givenStart;
+	givenStart.x = d->campus[ID].start.x;
+	givenStart.y = d->campus[ID].start.y;
+	
+	/// And this is the co-ordinate of the test. This will be one grid
+	/// space away from the given co-ordinate. The end of an ARC will
+	/// just use the given co-ordinate.
+	Coord testEnd;
+	
+	/// And this is the ID of the vertex we are testing.
+	
+	/// Firstly, we check to see if it's touching a friendly road.
+	/// If it is, it's valid.
+	
+	while ((iterations < 6) && (isItValid == FALSE)) {
+		/// First, we set what vertex we're checking.
+		if (iterations == 0) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 1) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 2) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 3) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenStart.x - 1;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 4) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 5) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y + 1;
+		}
+		
+		/// Then, we store that edge's ID.
+		testID = searchForARC(d, givenStart, testEnd);
+		
+		/// If that was an invalid edge, then it doesn't bother.
+		if (testID != NOT_FOUND) {
+			/// Otherwise, we check if that belongs to that player.
+			if (player == UNI_A) {
+				if (d->ARC[testID].type == ARC_A) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_B) {
+				if (d->ARC[testID].type == ARC_B) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_C) {
+				if (d->ARC[testID].type == ARC_C) {
+					isItValid = TRUE;
+				}
+			}
+		}
+		iterations++;
+	}
+	
+	/// If they're connected to a road, we have to double-check that
+	/// they're not directly next to another campus.
+	if (isItValid == TRUE) {
+	iterations = 0;
+		while ((iterations < 6) && (isItValid == TRUE)) {
+			/// First, we set what vertex we're checking.
+			if (iterations == 0) {
+				/// This checks the 1 o'clock position.
+				testEnd.x = givenStart.x + 1;
+				testEnd.y = givenStart.y + 1;
+			} else if (iterations == 1) {
+				/// This checks the 3 o'clock position.
+				testEnd.x = givenStart.x + 1;
+				testEnd.y = givenStart.y;
+			} else if (iterations == 2) {
+				/// This checks the 5 o'clock position.
+				testEnd.x = givenStart.x;
+				testEnd.y = givenStart.y - 1;
+			} else if (iterations == 3) {
+				/// This checks the 7 o'clock position.
+				testEnd.x = givenStart.x - 1;
+				testEnd.y = givenStart.y - 1;
+			} else if (iterations == 4) {
+				/// This checks the 9 o'clock position.
+				testEnd.x = givenStart.x - 1;
+				testEnd.y = givenStart.y;
+			} else if (iterations == 5) {
+				/// This checks the 11 o'clock position.
+				testEnd.x = givenStart.x;
+				testEnd.y = givenStart.y + 1;
+			}
+			
+			/// Then, we store that vertex's ID.
+			short testID = searchForCampus(d, testEnd);
+			
+			/// If that was an invalid vertex, then it doesn't bother.
+			if (testID != NOT_FOUND) {
+				/// Otherwise, we check if that belongs to that player.
+				if (player == UNI_A) {
+					if ((d->campus[testID].type == CAMPUS_A) ||
+					    (d->campus[testID].type == GO8_A)) {
+						isItValid = FALSE;
+					}
+				} else if (player == UNI_B) {
+					if ((d->campus[testID].type == CAMPUS_B) ||
+					    (d->campus[testID].type == GO8_B)) {
+						isItValid = FALSE;
+					}
+				} else if (player == UNI_C) {
+					if ((d->campus[testID].type == CAMPUS_C) ||
+					    (d->campus[testID].type == GO8_C)) {
+						isItValid = FALSE;
+					}
+				}
+			}
+			iterations++;
+		}		
+	}
+	return isItValid;
+}
+
+/// This function checks if a specific player can build an ARC based on
+/// what's around the given position. It doesn't take into count the
+/// user's resources, or what is already on that space. That's handled
+/// by the rest of isLegalAction. It does have exceptions if the user
+/// has not yet built an ARC.
+short validARCPositions(Data d, int player, short ID) {
+	/// This stores whether their campus can actually be placed there.
+	short isItValid = FALSE;
+	
+	/// This stores how many directions we've tested. This should stop
+	/// at 12.
+	short iterations = 0;
+	short testID = NOT_FOUND;
+	
+	/// This stores the co-ordinate of where they want to go.
+	Coord givenStart;
+	givenStart.x = d->ARC[ID].start.x;
+	givenStart.y = d->ARC[ID].start.y;
+	Coord givenEnd;
+	givenEnd.x = d->ARC[ID].end.x;
+	givenEnd.y = d->ARC[ID].end.y;
+	
+	/// And this is the co-ordinate of the test. This will be one grid
+	/// space away from the given co-ordinate. The end of an ARC will
+	/// just use the given co-ordinate.
+	Coord testEnd;
+	
+	/// And this is the ID of the vertex we are testing.
+	
+	/// Firstly, we check to see if it's touching a friendly road.
+	/// If it is, it's valid.
+	
+	while ((iterations < 12) && (isItValid == FALSE)) {
+		/// First, we set what vertex we're checking.
+		if (iterations == 0) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 1) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenStart.x + 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 2) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 3) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenStart.x - 1;
+			testEnd.y = givenStart.y - 1;
+		} else if (iterations == 4) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenStart.x - 1;
+			testEnd.y = givenStart.y;
+		} else if (iterations == 5) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenStart.x;
+			testEnd.y = givenStart.y + 1;
+		} else if (iterations == 6) {
+			/// This checks the 1 o'clock position.
+			testEnd.x = givenEnd.x + 1;
+			testEnd.y = givenEnd.y + 1;
+		} else if (iterations == 7) {
+			/// This checks the 3 o'clock position.
+			testEnd.x = givenEnd.x + 1;
+			testEnd.y = givenEnd.y;
+		} else if (iterations == 8) {
+			/// This checks the 5 o'clock position.
+			testEnd.x = givenEnd.x;
+			testEnd.y = givenEnd.y - 1;
+		} else if (iterations == 9) {
+			/// This checks the 7 o'clock position.
+			testEnd.x = givenEnd.x - 1;
+			testEnd.y = givenEnd.y - 1;
+		} else if (iterations == 10) {
+			/// This checks the 9 o'clock position.
+			testEnd.x = givenEnd.x - 1;
+			testEnd.y = givenEnd.y;
+		} else if (iterations == 11) {
+			/// This checks the 11 o'clock position.
+			testEnd.x = givenEnd.x;
+			testEnd.y = givenEnd.y + 1;
+		}
+		
+		/// Then, we store that edge's ID. We check 6 directions based
+		/// on one vertex, then the other vertex.
+		if (iterations < 6) {
+			testID = searchForARC(d, givenStart, testEnd);
+		} else {
+			testID = searchForARC(d, givenEnd, testEnd);
+		}
+		
+		/// If that was an invalid edge, then it doesn't bother.
+		if (testID != NOT_FOUND) {
+			/// Otherwise, we check if that belongs to that player.
+			if (player == UNI_A) {
+				if (d->ARC[testID].type == ARC_A) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_B) {
+				if (d->ARC[testID].type == ARC_B) {
+					isItValid = TRUE;
+				}
+			} else if (player == UNI_C) {
+				if (d->ARC[testID].type == ARC_C) {
+					isItValid = TRUE;
+				}
+			}
+		}
+		
+		/// As a corner-case, we will end up counting the line itself,
+		/// so we have an exception case here.
+		if (((testEnd.x == givenEnd.x) && (testEnd.y == givenEnd.y)) ||
+		    ((testEnd.x == givenStart.x) && (testEnd.y == givenStart.y))) {
+			isItValid = FALSE;
+		}
+		
+		iterations++;
+	}
+	
+	/// Another corner-case, if the user has not built an ARC yet, they
+	/// wouldn't be able to put an ARC next to an existing one. So, we
+	/// just explicitly write some exceptions.
+	if ((player == UNI_A) && (d->p1.ARCs == 0)) {
+		if ((ID == 0) || (ID == 24) || (ID == 23) || (ID == 47)) {
+			isItValid = TRUE;
+		}
+	} else if ((player == UNI_B) && (d->p2.ARCs == 0)) {
+		if ((ID == 27) || (ID == 54) || (ID == 44) || (ID == 65)) {
+			isItValid = TRUE;
+		}
+	} else if ((player == UNI_C) && (d->p3.ARCs == 0)) {
+		if ((ID == 5) || (ID == 53) || (ID == 18) || (ID == 66)) {
+			isItValid = TRUE;
+		}
+	}
+	
+	return isItValid;
 }
 
 void readInitialiseVertices(Data d) {
