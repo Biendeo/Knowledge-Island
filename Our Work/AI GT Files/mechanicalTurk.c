@@ -258,7 +258,7 @@ action decideAction (Game g) {
 			short ID = validCampuses[0];
 			nextAction.actionCode = BUILD_CAMPUS;
 			Coord entryStart = d->campus[ID].start;
-			convertVertex(d, nextAction.destination, entryStart);
+			convertVertex(d, destination, entryStart);
 			// FIGURE OUT WHEN TO CONVERT RESOURCES
 		} else if ((convertibleBPSs + convertibleBQNs) >= (4 - (shortBPSs + shortBQNs + shortMJs + shortMTVs))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
@@ -298,12 +298,14 @@ action decideAction (Game g) {
 			shortBQNs = 1;
 		}
 		
+		printf("myBPSs = %d, myBQNs = %d\n", myBPSs, myBQNs);
 		if (myBPSs >= 1 && myBQNs >= 1) {
 			short ID = validARCs[0];
 			nextAction.actionCode = OBTAIN_ARC;
 			Coord entryStart = d->campus[ID].start;
 			Coord entryEnd = d->ARC[ID].end;
-			convertEdge(d, nextAction.destination, entryStart, entryEnd);
+			convertEdge(d, destination, entryStart, entryEnd);
+			printf("destination = %s\n", destination);
 			// FIGURE OUT WHEN TO CONVERT RESOURCES
 		} else if ((convertibleMJs + convertibleMTVs + convertibleMMONEYs) >= (2 - (shortBPSs + shortBQNs ))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
