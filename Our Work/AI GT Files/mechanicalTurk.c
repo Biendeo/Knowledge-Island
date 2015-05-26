@@ -216,13 +216,8 @@ action decideAction (Game g) {
 	path destination = {0};
 	
 	/// This determines what the AI wants to accomplish.
-	// Right now, it just wants to perform a spinoff. Later, this will
-	// be the determinating logic. It should be based mostly on the
-	// board situation, or KPIs, rather than resources on-hand. This
-	// should give the AI a "goal", which should make its actions more
-	// consistent.
 	
-	if (((myCampuses >= 5) && (myGO8s != 0)) && (validGO8s[0] != -1)) {
+	if (((myCampuses + myGO8s >= 5) && (myCampuses != 0)) && (validGO8s[0] != -1)) {
 		whatDoIWantToDo = MAKE_GO8;
 	} else if ((((float)myARCs / (myCampuses + myGO8s)) >= 2) && (validCampuses[0] != -1)) {
 		whatDoIWantToDo = MAKE_CAMPUS;
@@ -235,8 +230,42 @@ action decideAction (Game g) {
 	/// Then it makes its action.
 	/// Right now, the AI will make a spin-off if it has the resources
 	/// to, and a pass if it doesn't.
-	
-	if (whatDoIWantToDo == MAKE_CAMPUS) {
+	if (whatDoIWantToDo == MAKE_GO8) {
+		short shortMJs = myMJs;
+		if (myMJs >= 2) {
+			shortMJs = 2;
+		}
+		short shortMMONEYs = myMJs;
+		if (myMMONEYs >= 3) {
+			shortMMONEYs = 3;
+		}
+		
+		if (myMJs >= 2 && myMMONEYs >= 3) {
+			short ID = validGO8s[0];
+			nextAction.actionCode = BUILD_GO8;
+			Coord entryStart = d->campus[ID].start;
+			convertVertex(d, destination, entryStart);
+			// FIGURE OUT WHEN TO CONVERT RESOURCES
+		} else if ((convertibleBPSs + convertibleBQNs + convertibleMTVs) >= (5 - (shortMJs + shortMMONEYs))) {
+			nextAction.actionCode = RETRAIN_STUDENTS;
+			if (convertibleBPSs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BPS;
+			} else if (convertibleBQNs >= 1) {
+				nextAction.disciplineFrom = STUDENT_BQN;
+			} else if (convertibleMTVs >= 1) {
+				nextAction.disciplineFrom = STUDENT_MTV;
+			}
+			else if (myMJs < 2) {
+				nextAction.disciplineTo = STUDENT_MJ;
+			} else if (myMMONEYs < 3) {
+				nextAction.disciplineTo = STUDENT_MMONEY;
+			}
+		} else {
+			nextAction.actionCode = PASS;
+			nextAction.disciplineFrom = 0;
+			nextAction.disciplineTo = 0;
+		}
+	} else if (whatDoIWantToDo == MAKE_CAMPUS) {
 		short shortBPSs = 0;
 		if (myBPSs >= 1) {
 			shortBPSs = 1;
@@ -387,29 +416,7 @@ action decideAction (Game g) {
 		nextAction.disciplineTo = 0;
 	}
 	
-	// printf("!! My goal is %d.\n", whatDoIWantToDo);
-	// short poopypos = 0;
-	// printf("Valid campuses: ");
-	// while (poopypos < NUM_VERTICES) {
-		// printf("%d ", validCampuses[poopypos]);
-		// poopypos++;
-	// }
-	// poopypos = 0;
-	// printf("\nValid GO8s: ");
-	// while (poopypos < NUM_VERTICES) {
-		// printf("%d ", validGO8s[poopypos]);
-		// poopypos++;
-	// }
-	// poopypos = 0;
-	// printf("\nValid ARCs: ");
-	// while (poopypos < NUM_EDGES) {
-		// printf("%d ", validARCs[poopypos]);
-		// poopypos++;
-	// }
-	// printf("\n");
-	
 	printf("!! Doing action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
-	// getchar();
 	free(d);
 	
 	return nextAction;
