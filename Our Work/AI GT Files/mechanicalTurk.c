@@ -302,10 +302,11 @@ action decideAction (Game g) {
 		if (myBPSs >= 1 && myBQNs >= 1) {
 			short ID = validARCs[0];
 			nextAction.actionCode = OBTAIN_ARC;
-			Coord entryStart = d->campus[ID].start;
+			Coord entryStart = d->ARC[ID].start;
 			Coord entryEnd = d->ARC[ID].end;
 			convertEdge(d, destination, entryStart, entryEnd);
-			printf("destination = %s\n", destination);
+			printf("ARC %d's destination = %s\n", ID, destination);
+			printf("Coords %d, %d and %d, %d\n", entryStart.x, entryStart.y, entryEnd.x, entryEnd.y);
 			// FIGURE OUT WHEN TO CONVERT RESOURCES
 		} else if ((convertibleMJs + convertibleMTVs + convertibleMMONEYs) >= (2 - (shortBPSs + shortBQNs ))) {
 			nextAction.actionCode = RETRAIN_STUDENTS;
@@ -323,6 +324,7 @@ action decideAction (Game g) {
 				nextAction.disciplineTo = STUDENT_BQN;
 			}
 		} else {
+		printf("PASS 1\n");
 			nextAction.actionCode = PASS;
 			nextAction.disciplineFrom = 0;
 			nextAction.disciplineTo = 0;
@@ -379,6 +381,8 @@ action decideAction (Game g) {
 	/// Game.c. Otherwise, we save ourselves the trouble, and just
 	/// pass.
 	if (isLegalAction(g, nextAction) == FALSE) {
+		printf("!! The action I wanted is apparently not valid.\n");
+		printf("!! I tried action %d, path %s, disc. from %d, disc. to %d.\n", nextAction.actionCode, nextAction.destination, nextAction.disciplineFrom, nextAction.disciplineTo);
 		nextAction.actionCode = PASS;
 		nextAction.disciplineFrom = 0;
 		nextAction.disciplineTo = 0;
