@@ -217,7 +217,10 @@ action decideAction (Game g) {
 	
 	/// This determines what the AI wants to accomplish.
 	
-	if (((myCampuses + myGO8s >= 5) && (myCampuses != 0)) && (validGO8s[0] != -1)) {
+	// The campus number is too high for a single AI to even consider
+	// during a game. Test changing the 30 to a 5, and seeing if the AI
+	// can consistantly beat 200 turns.
+	if (((myCampuses + myGO8s >= 30) && (myCampuses != 0)) && (validGO8s[0] != -1)) {
 		whatDoIWantToDo = MAKE_GO8;
 	} else if ((((float)myARCs / (myCampuses + myGO8s)) >= 2) && (validCampuses[0] != -1)) {
 		whatDoIWantToDo = MAKE_CAMPUS;
